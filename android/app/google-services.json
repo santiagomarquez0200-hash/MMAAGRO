@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1035585202895",
+    "project_id": "mma-agro",
+    "storage_bucket": "mma-agro.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1035585202895:android:f65bce7141d0058608e5ba",
+        "android_client_info": {
+          "package_name": "com.example.agro_aplicaciones"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzlWN5FUIBLAr1M3n5HNI_YxPuzdbdlHI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

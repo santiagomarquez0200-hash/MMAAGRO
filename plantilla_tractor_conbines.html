@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Control Diario de Operaciones Agrícolas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff;
+        }
+
+        .hoja {
+            width: 920px;
+            margin: auto;
+            border: 2px solid #000;
+            padding: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        td,
+        th {
+            border: 1px solid #000;
+            padding: 2px 4px;
+            font-size: 14px;
+            line-height: 1.15;
+            vertical-align: middle;
+        }
+
+        .titulo {
+            font-size: 16px;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .gris {
+            background: #d9d9d9;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .bold {
+            font-weight: 800;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .campo {
+            height: 22px;
+        }
+
+        .campo-md {
+            height: 26px;
+        }
+
+        .campo-lg {
+            height: 30px;
+        }
+
+        .check {
+            width: 30px;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 11px;
+        }
+
+        input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+        }
+
+        .firma {
+            height: 65px;
+            border: none;
+            text-align: center;
+            vertical-align: bottom;
+            font-size: 14px;
+        }
+
+        .linea {
+            border-top: 1.5px solid #000;
+            width: 220px;
+            margin: auto;
+            padding-top: 5px;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .hoja {
+                width: 100%;
+                border: 2px solid #000;
+            }
+        }
+    </style>
+</head>
+
+<body class="p-4">
+
+    <div class="hoja">
+
+        <!-- ENCABEZADO -->
+        <table>
+            <tr>
+                <td rowspan="3" class="w-[130px] center bold text-green-700">
+                    AGROKASA
+                </td>
+                <td rowspan="3" class="titulo">
+                    CONTROL DIARIO DE OPERACIONES AGRICOLAS
+                </td>
+                <td class="w-[210px] center bold">MMA-FR-004</td>
+            </tr>
+            <tr>
+                <td class="center bold">Versión: 01</td>
+            </tr>
+            <tr>
+                <td class="center bold">Fecha Aprobación: 02/02/2024</td>
+            </tr>
+        </table>
+
+        <!-- PROCESO -->
+        <table>
+            <tr>
+                <td rowspan="2" class="center bold w-[85px]">PROCESO</td>
+
+                <td class="bold center w-[105px]">APLICACIÓN</td>
+                <td class="check"></td>
+
+                <td class="bold center w-[90px]">PODA</td>
+                <td class="check"></td>
+
+                <td class="bold center w-[105px]">TRITURADO</td>
+                <td class="check"></td>
+
+                <td class="bold center w-[95px]">MELAZA</td>
+                <td class="check"></td>
+
+                <td rowspan="2" class="gris w-[80px]">CULTIVO</td>
+                <td rowspan="2" class="campo-lg w-[150px]"><input></td>
+            </tr>
+            <tr>
+                <td class="bold center">COSECHA</td>
+                <td class="check"></td>
+
+                <td class="bold center">RUFA</td>
+                <td class="check"></td>
+
+                <td class="bold center">CARRETEO</td>
+                <td class="check"></td>
+
+                <td class="bold center">OTRO</td>
+                <td class="check"></td>
+            </tr>
+        </table>
+
+        <!-- DATOS PRINCIPALES -->
+        <table>
+            <tr>
+                <td class="bold w-[85px]">OPERADOR:</td>
+                <td class="campo-md"><input></td>
+
+                <td class="bold center w-[115px]">SUPERVISOR:</td>
+                <td class="campo-md"><input></td>
+
+                <td class="bold center w-[75px]">FECHA:</td>
+                <td class="campo-md w-[150px]"><input></td>
+            </tr>
+            <tr>
+                <td class="bold">TRACTOR:</td>
+                <td class="campo-md"><input></td>
+
+                <td class="bold center">IMPLEMENTO:</td>
+                <td class="campo-md"><input></td>
+
+                <td class="bold center">HORARIO:</td>
+                <td class="campo-md"><input></td>
+            </tr>
+        </table>
+
+        <!-- INICIO / FIN -->
+        <table>
+            <tr>
+                <td class="w-1/2 p-0">
+                    <table class="mb-0">
+                        <tr>
+                            <td colspan="3" class="gris">INICIO DEL TURNO DE TRABAJO</td>
+                        </tr>
+
+                        <tr>
+                            <td class="bold w-[65%]">HORÓMETRO TRACTOR INICIO</td>
+                            <td colspan="2" class="campo-md"><input></td>
+                        </tr>
+
+                        <tr>
+                            <td class="bold">HORÓMETRO IMPLEMENTO INICIO</td>
+                            <td colspan="2" class="campo-md"><input></td>
+                        </tr>
+
+                        <tr>
+                            <td>Hora salida de Taller base / TD</td>
+                            <td colspan="2" class="campo-md"><input></td>
+                        </tr>
+
+                        <tr>
+                            <td>Hora de llegada al punto de trabajo</td>
+                            <td colspan="2" class="campo-md"><input></td>
+                        </tr>
+
+                        <tr>
+                            <td>Marcha de trabajo (Caja Cambios)</td>
+                            <td colspan="2" class="campo-md"><input></td>
+                        </tr>
+
+                        <!-- 👇 AQUÍ sí usas 3 columnas reales -->
+                        <tr>
+                            <td>Hora de refrigerio</td>
+                            <td class="campo-md"><input></td>
+                            <td class="campo-md"><input></td>
+                        </tr>
+                    </table>
+                </td>
+
+                <td class="w-1/2 p-0">
+                    <table class="mb-0">
+                        <tr>
+                            <td colspan="2" class="gris">FIN DEL TURNO DE TRABAJO</td>
+                        </tr>
+                        <tr>
+                            <td class="bold w-[65%]">HORÓMETRO TRACTOR FINAL</td>
+                            <td class="campo-md"><input></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">HORÓMETRO IMPLEMENTO FINAL</td>
+                            <td class="campo-md"><input></td>
+                        </tr>
+                        <tr>
+                            <td>Hora salida del punto de trabajo</td>
+                            <td class="campo-md"><input></td>
+                        </tr>
+                        <tr>
+                            <td>Hora llegada a Taller Base / TD</td>
+                            <td class="campo-md"><input></td>
+                        </tr>
+                        <tr>
+                            <td>Lotes trabajados</td>
+                            <td class="campo-md"><input></td>
+                        </tr>
+                        <tr>
+                            <td>Sectores trabajados</td>
+                            <td class="campo-md"><input></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <!-- COSECHA -->
+        <table class="w-[520px] mx-auto">
+            <tr>
+                <td colspan="5" class="gris">
+                    SOLO EN CASO DE COSECHA (CONTABILIZAR BINES LLENOS CARGADOS)
+                </td>
+            </tr>
+            <tr class="center bold">
+                <td>HORARIO</td>
+                <td>CANTIDAD</td>
+                <td>HORARIO</td>
+                <td>CANTIDAD</td>
+                <td>TOTAL</td>
+            </tr>
+            <tr>
+                <td class="center">6 – 7 am</td>
+                <td class="campo"><input></td>
+                <td class="center">12 – 1 pm</td>
+                <td class="campo"><input></td>
+                <td rowspan="6"><input></td>
+            </tr>
+            <tr>
+                <td class="center">7 – 8 am</td>
+                <td class="campo"><input></td>
+                <td class="center">1 – 2 pm</td>
+                <td><input></td>
+            </tr>
+            <tr>
+                <td class="center">8 – 9 am</td>
+                <td class="campo"><input></td>
+                <td class="center">2 – 3 pm</td>
+                <td><input></td>
+            </tr>
+            <tr>
+                <td class="center">9 – 10 am</td>
+                <td class="campo"><input></td>
+                <td class="center">3 – 4 pm</td>
+                <td><input></td>
+            </tr>
+            <tr>
+                <td class="center">10 – 11 am</td>
+                <td class="campo"><input></td>
+                <td class="center">4 – 5 pm</td>
+                <td><input></td>
+            </tr>
+            <tr>
+                <td class="center">11 – 12 pm</td>
+                <td class="campo"><input></td>
+                <td class="center">5 – 6 pm</td>
+                <td><input></td>
+            </tr>
+        </table>
+
+        <!-- MOTIVOS DE PARO -->
+        <table>
+            <tr>
+                <td colspan="10" class="gris">MOTIVOS DE PARO DE LOS EQUIPOS</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="gris">FACTOR CLIMÁTICO</td>
+                <td colspan="3" class="gris">ABASTECIMIENTO COMBUSTIBLE</td>
+                <td colspan="4" class="gris">FALLAS MECÁNICAS</td>
+            </tr>
+            <tr class="center bold">
+                <td>MOTIVO</td>
+                <td>INICIO</td>
+                <td>FINAL</td>
+                <td>GLNS</td>
+                <td>INICIO</td>
+                <td>FINAL</td>
+                <td>MOTIVO</td>
+                <td>EQUIPO</td>
+                <td>INICIO</td>
+                <td>FINAL</td>
+            </tr>
+            <tr>
+                <td class="campo"></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td colspan="3" class="gris">CALIBRACIÓN DE EQUIPOS</td>
+                <td colspan="3" class="gris">CHARLAS O CAPACITACIONES</td>
+                <td rowspan="3"></td>
+                <td rowspan="3"></td>
+                <td rowspan="3"></td>
+                <td rowspan="3"></td>
+            </tr>
+            <tr class="center bold">
+                <td>MOTIVO</td>
+                <td>INICIO</td>
+                <td>FINAL</td>
+                <td>MOTIVO</td>
+                <td>INICIO</td>
+                <td>FINAL</td>
+            </tr>
+            <tr>
+                <td class="campo"></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+
+        <!-- CHECKLIST CORREGIDO -->
+        <table>
+            <tr>
+                <td colspan="8" class="gris">
+                    CHECK LIST DIARIO (Verificar: Bien ✔ o Mal ✘)
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="4" class="gris">INSPECCIONAR TRACTOR</td>
+                <td colspan="4" class="gris">INSPECCIONAR IMPLEMENTO</td>
+            </tr>
+
+            <tr>
+                <td>Nivel de aceite del motor</td>
+                <td class="check"><input></td>
+                <td>Nivel de aceite en los reductores delant. y post.</td>
+                <td class="check"><input></td>
+
+                <td>Nivel de aceite hidráulico del Implemento</td>
+                <td class="check"><input></td>
+                <td>Fajas de transmisión</td>
+                <td class="check"><input></td>
+            </tr>
+
+            <tr>
+                <td>Nivel de refrigerante del motor</td>
+                <td class="check"><input></td>
+                <td>Nivel de aceite del tren delantero</td>
+                <td class="check"><input></td>
+
+                <td>Nivel de aceite de la caja multiplicadora</td>
+                <td class="check"><input></td>
+                <td>Bombines hidráulicos</td>
+                <td class="check"><input></td>
+            </tr>
+
+            <tr>
+                <td>Nivel de aceite hidráulico del tractor</td>
+                <td class="check"><input></td>
+                <td>Templadores de los brazos de levante y pines/seguros</td>
+                <td class="check"><input></td>
+
+                <td>Llantas y ajuste de tuercas de rueda</td>
+                <td class="check"><input></td>
+                <td>Comando hidráulico</td>
+                <td class="check"><input></td>
+            </tr>
+
+            <tr>
+                <td>Batería y sus bornes</td>
+                <td class="check"><input></td>
+                <td>Llantas y ajuste de tuercas de rueda</td>
+                <td class="check"><input></td>
+
+                <td>Barra de tiro, pines y seguro</td>
+                <td class="check"><input></td>
+                <td>Comando eléctrico</td>
+                <td class="check"><input></td>
+            </tr>
+
+            <tr>
+                <td>Faja de alternador</td>
+                <td class="check"><input></td>
+                <td>Cinturón de seguridad y Protección antivuelco</td>
+                <td class="check"><input></td>
+
+                <td>Tanque de productos</td>
+                <td class="check"><input></td>
+                <td>Luces del Implemento</td>
+                <td class="check"><input></td>
+            </tr>
+
+            <tr>
+                <td>Espejos del tractor</td>
+                <td class="check"><input></td>
+                <td>Luces del tractor</td>
+                <td class="check"><input></td>
+
+                <td>Cardan y su Protector</td>
+                <td class="check"><input></td>
+                <td>Horómetro</td>
+                <td class="check"><input></td>
+            </tr>
+
+            <tr>
+                <td>Claxon</td>
+                <td class="check"><input></td>
+                <td>Alarma de retroceso</td>
+                <td class="check"><input></td>
+
+                <td>Mangueras hidráulicas</td>
+                <td class="check"><input></td>
+                <td>Techo y soportes</td>
+                <td class="check"><input></td>
+            </tr>
+
+            <tr>
+                <td>Extintor</td>
+                <td class="check"><input></td>
+                <td>Tacos de seguridad</td>
+                <td class="check"><input></td>
+
+                <td>Mangueras agroquímicas</td>
+                <td class="check"><input></td>
+                <td>Soporte frontal y templadores</td>
+                <td class="check"><input></td>
+            </tr>
+
+            <tr>
+                <td colspan="8" class="h-[55px] align-top">
+                    Observaciones de la maquinaria:
+                </td>
+            </tr>
+        </table>
+
+        <!-- FIRMAS -->
+        <table>
+            <tr>
+                <td class="firma">
+                    <div class="linea">Firma del Operador</div>
+                </td>
+                <td class="firma">
+                    <div class="linea">Firma del Cliente</div>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+
+</body>
+
+</html>

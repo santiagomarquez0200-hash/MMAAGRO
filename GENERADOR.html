@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Generador QR - Pruebas Palta AgroGest</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        input,
+        select,
+        button {
+            padding: 10px;
+            margin: 5px;
+            width: 90%;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .qr-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .qr-item {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .codigo {
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .exito {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Generador QR para Pruebas - Módulo Palta</h1>
+
+    <div class="container">
+        <!-- Panel 1: Generar QR de Confección -->
+        <div class="panel">
+            <h2>📦 1. QR de CONFECCIÓN (Tipo de caja)</h2>
+            <p>Este QR identifica el <strong>TIPO de empaque</strong>. Varias cajas comparten el mismo.</p>
+
+            <label>Código de Confección:</label>
+            <input type="text" id="codigoConfeccion" value="PALTA_PREMIUM_5KG" placeholder="Ej: PALTA_PREMIUM_5KG">
+
+            <label>Nombre:</label>
+            <input type="text" id="nombreConfeccion" value="Caja Premium Palta 5kg">
+
+            <label>Id_Articulo (ID del producto en ERP):</label>
+            <input type="number" id="idArticulo" value="1234">
+
+            <button onclick="generarQRConfeccion()">Generar QR de Confección</button>
+
+            <div id="qrConfeccion" class="qr-container"></div>
+
+            <div id="sqlConfeccion" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- Panel 2: Generar QR de Caja Individual -->
+        <div class="panel">
+            <h2>📦 2. QR de CAJA INDIVIDUAL</h2>
+            <p>Este QR identifica <strong>UNA caja específica</strong>. Cada caja tiene su propio código.</p>
+
+            <label>Código de Caja:</label>
+            <input type="text" id="codigoCaja" value="PALTA240101001" placeholder="Ej: PALTA240101001">
+
+            <label>Relacionar con Confección:</label>
+            <select id="relacionConfeccion">
+                <option value="PALTA_PREMIUM_5KG">PALTA_PREMIUM_5KG (Premium 5kg)</option>
+                <option value="PALTA_STANDARD_1KG">PALTA_STANDARD_1KG (Standard 1kg)</option>
+                <option value="PALTA_ECONOMICA_2KG">PALTA_ECONOMICA_2KG (Económica 2kg)</option>
+            </select>
+
+            <button onclick="generarQRCaja()">Generar QR de Caja Individual</button>
+
+            <div id="qrCaja" class="qr-container"></div>
+
+            <div id="sqlCaja" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- Panel 3: Instrucciones SQL -->
+        <div class="panel">
+            <h2>🗄️ 3. Scripts SQL para insertar en BD</h2>
+            <p>Ejecuta esto en SQL Server ANTES de escanear los QR:</p>
+            <pre id="sqlScripts">Selecciona "Generar" para ver los scripts...</pre>
+            <button onclick="copiarSQL()">📋 Copiar SQL al portapapeles</button>
+            <br><br>
+            <h3>📋 Últimos escaneos registrados:</h3>
+            <pre id="ultimosEscaneos">SELECT TOP 10 * FROM CLI547_AGM_PackingCaja ORDER BY Id DESC;</pre>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de confecciones disponibles
+        const confecciones = {
+            'PALTA_PREMIUM_5KG': { nombre: 'Caja Premium Palta 5kg', idArticulo: 1234 },
+            'PALTA_STANDARD_1KG': { nombre: 'Caja Standard Palta 1kg', idArticulo: 1235 },
+            'PALTA_ECONOMICA_2KG': { nombre: 'Caja Económica Palta 2kg', idArticulo: 1236 }
+        };
+
+        function generarQRConfeccion() {
+            const codigo = document.getElementById('codigoConfeccion').value;
+            const nombre = document.getElementById('nombreConfeccion').value;
+            const idArticulo = document.getElementById('idArticulo').value;
+
+            if (!codigo) {
+                alert('Ingresa un código de confección');
+                return;
+            }
+
+            // Limpiar contenedor anterior
+            document.getElementById('qrConfeccion').innerHTML = '';
+
+            // Generar QR
+            new QRCode(document.getElementById('qrConfeccion'), {
+                text: codigo,
+                width: 200,
+                height: 200
+            });
+
+            // Mostrar código
+            document.getElementById('qrConfeccion').innerHTML += `<div class="codigo">📌 Código: ${codigo}</div>`;
+            document.getElementById('qrConfeccion').innerHTML += `<div class="codigo">🏷️ Tipo: CONFECCIÓN (Tipo de empaque)</div>`;
+
+            // Generar SQL para insertar en TipoConfeccion
+            const sql1 = `
+-- 1. Insertar en TipoConfeccion (si no existe)
+IF NOT EXISTS (SELECT 1 FROM CLI547_AGM_TipoConfeccion WHERE Codigo = '${codigo}')
+BEGIN
+    INSERT INTO CLI547_AGM_TipoConfeccion (Codigo, Nombre, Id_Articulo, Activo, Version)
+    VALUES ('${codigo}', '${nombre}', ${idArticulo}, 1, 1);
+    PRINT '✅ Confección insertada';
+END
+ELSE
+    PRINT '⚠️ La confección ya existe';
+`;
+
+            document.getElementById('sqlConfeccion').innerHTML = `<strong>📝 SQL para ejecutar:</strong><pre>${sql1}</pre>`;
+
+            // Actualizar scripts completos
+            actualizarScriptsCompletos();
+        }
+
+        function generarQRCaja() {
+            const codigoCaja = document.getElementById('codigoCaja').value;
+            const confeccionSelect = document.getElementById('relacionConfeccion').value;
+
+            if (!codigoCaja) {
+                alert('Ingresa un código de caja');
+                return;
+            }
+
+            // Limpiar contenedor anterior
+            document.getElementById('qrCaja').innerHTML = '';
+
+            // Generar QR con el código de caja
+            new QRCode(document.getElementById('qrCaja'), {
+                text: codigoCaja,
+                width: 200,
+                height: 200
+            });
+
+            // Mostrar código
+            document.getElementById('qrCaja').innerHTML += `<div class="codigo">📌 Código: ${codigoCaja}</div>`;
+            document.getElementById('qrCaja').innerHTML += `<div class="codigo">🔗 Relacionado con: ${confeccionSelect}</div>`;
+
+            // Generar SQL para insertar en HistorialImpresion
+            const sql2 = `
+-- 2. Insertar en HistorialImpresion (relaciona código escaneado → confección)
+INSERT INTO CLI547_AGM_HistorialImpresion (CodigoGenerado, CodigoUnicoConfeccion, TipoEtiqueta, FechaImpresion, FueUsado)
+VALUES ('${codigoCaja}', '${confeccionSelect}', 'PK', GETDATE(), 0);
+PRINT '✅ Relación creada: ${codigoCaja} → ${confeccionSelect}';
+
+-- Verificar que quedó bien
+SELECT 
+    h.CodigoGenerado AS 'LoQueEscaneas',
+    h.CodigoUnicoConfeccion AS 'TipoDeCaja',
+    tc.Nombre AS 'Descripcion',
+    tc.Id_Articulo
+FROM CLI547_AGM_HistorialImpresion h
+JOIN CLI547_AGM_TipoConfeccion tc ON tc.Codigo = h.CodigoUnicoConfeccion
+WHERE h.CodigoGenerado = '${codigoCaja}';
+`;
+
+            document.getElementById('sqlCaja').innerHTML = `<strong>📝 SQL para ejecutar:</strong><pre>${sql2}</pre>`;
+
+            // Actualizar scripts completos
+            actualizarScriptsCompletos();
+        }
+
+        function actualizarScriptsCompletos() {
+            const codigoConfeccion = document.getElementById('codigoConfeccion').value;
+            const nombreConfeccion = document.getElementById('nombreConfeccion').value;
+            const idArticulo = document.getElementById('idArticulo').value;
+            const codigoCaja = document.getElementById('codigoCaja').value;
+            const confeccionSelect = document.getElementById('relacionConfeccion').value;
+
+            const sqlCompleto = `
+-- ============================================
+-- SCRIPT COMPLETO PARA PRUEBAS DE PALTA
+-- Ejecutar TODO en SQL Server antes de escanear
+-- ============================================
+
+USE [TU_BASE_DATOS];
+GO
+
+-- PASO 1: Asegurar que la confección existe
+IF NOT EXISTS (SELECT 1 FROM CLI547_AGM_TipoConfeccion WHERE Codigo = '${codigoConfeccion}')
+BEGIN
+    INSERT INTO CLI547_AGM_TipoConfeccion (Codigo, Nombre, Id_Articulo, Activo, Version)
+    VALUES ('${codigoConfeccion}', '${nombreConfeccion}', ${idArticulo}, 1, 1);
+    PRINT '✅ 1. Confección insertada';
+END
+ELSE
+    PRINT '⚠️ 1. La confección ya existe';
+
+-- PASO 2: Insertar la relación en HistorialImpresion
+IF NOT EXISTS (SELECT 1 FROM CLI547_AGM_HistorialImpresion WHERE CodigoGenerado = '${codigoCaja}')
+BEGIN
+    INSERT INTO CLI547_AGM_HistorialImpresion (CodigoGenerado, CodigoUnicoConfeccion, TipoEtiqueta, FechaImpresion, FueUsado)
+    VALUES ('${codigoCaja}', '${confeccionSelect}', 'PK', GETDATE(), 0);
+    PRINT '✅ 2. Relación creada: ${codigoCaja} → ${confeccionSelect}';
+END
+ELSE
+    PRINT '⚠️ 2. La relación ya existe';
+
+-- PASO 3: Verificar todo está correcto
+SELECT 
+    'CONFECCIÓN' AS Tipo,
+    tc.Codigo,
+    tc.Nombre,
+    tc.Id_Articulo
+FROM CLI547_AGM_TipoConfeccion tc
+WHERE tc.Codigo = '${codigoConfeccion}'
+
+UNION ALL
+
+SELECT 
+    'HISTORIAL' AS Tipo,
+    h.CodigoGenerado,
+    h.CodigoUnicoConfeccion,
+    NULL AS Id_Articulo
+FROM CLI547_AGM_HistorialImpresion h
+WHERE h.CodigoGenerado = '${codigoCaja}';
+
+-- PASO 4: Ver qué cajas se han escaneado en la sesión actual
+-- SELECT * FROM CLI547_AGM_PackingCaja WHERE Id_Sesion = TU_SESION_ID ORDER BY Id DESC;
+`;
+
+            document.getElementById('sqlScripts').innerHTML = sqlCompleto;
+        }
+
+        function copiarSQL() {
+            const sql = document.getElementById('sqlScripts').innerText;
+            navigator.clipboard.writeText(sql).then(() => {
+                alert('✅ SQL copiado al portapapeles. Pégalo en SQL Server Management Studio');
+            });
+        }
+
+        // Inicializar con valores por defecto
+        window.onload = function () {
+            generarQRConfeccion();
+            generarQRCaja();
+        };
+    </script>
+</body>
+
+</html>

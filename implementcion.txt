@@ -1,0 +1,171 @@
+ACTUALIZACION DE LAS NOMBRE DE LAS TABLAS Y PROCEDIMIENTO S
+SOLO NOMBRES , ADAPTAR EL APK PARA PODER CONSUMIR CORRECTAMENTE TODO ACTUALIZAR EL NOMBRE 
+DE LAS TABLAS LOCALES Y TODO OK 
+
+    TABLAS--------------------
+    CLI547_AGM_MMA_AUDIT_LOG
+    CLI547_AGM_MMA_CAJAS_CAMBIOS
+    CLI547_AGM_MMA_CHECKLIST_CATEGORIAS
+    CLI547_AGM_MMA_CHECKLIST_ITEMS_CATALOGO
+    CLI547_AGM_MMA_CHECKLIST_RESULTADOS
+    CLI547_AGM_MMA_COMBUSTIBLE_VEHICULO
+    CLI547_AGM_MMA_COSECHA_BINES
+    CLI547_AGM_MMA_FOTOS_REGISTRO
+    CLI547_AGM_MMA_HOROMETROS
+    CLI547_AGM_MMA_INCUMPLIMIENTOS
+    CLI547_AGM_MMA_MENUS
+    CLI547_AGM_MMA_NOTIFICACIONES
+    CLI547_AGM_MMA_PAROS_EQUIPOS
+    CLI547_AGM_MMA_PAROS_VEHICULO
+    CLI547_AGM_MMA_PORTERO_LECTURAS
+    CLI547_AGM_MMA_PROCESOS
+    CLI547_AGM_MMA_REGISTROS_DIARIOS
+    CLI547_AGM_MMA_REGISTROS_LOTES
+    CLI547_AGM_MMA_REGISTROS_MARCHAS
+    CLI547_AGM_MMA_REGISTROS_SUBLABORES
+    CLI547_AGM_MMA_REGISTROS_VEHICULO
+    CLI547_AGM_MMA_ROL_MENUS
+    CLI547_AGM_MMA_SESIONES_DISPOSITIVO
+    CLI547_AGM_MMA_STATUS_JORNADA
+    CLI547_AGM_MMA_SUBPROCESOS
+    CLI547_AGM_MMA_TIEMPOS_TURNO
+    CLI547_AGM_MMA_TIPOS_PARO
+    CLI547_AGM_MMA_PARAMETROS_TPM
+
+
+SP----------------------
+[dbo].[CLI547_AGMSP_MMA_ERP_SYNC_PAYLOAD_COMPLETO]
+[dbo].[CLI547_AGMSP_MMA_GetPerfilProfesional]
+[dbo].[CLI547_AGMSP_MMA_SINCRONIZAR_OFFLINE]
+[dbo].[CLI547_AGMSP_MMA_ACTUALIZAR_STATUS_JORNADA]
+[dbo].[CLI547_AGMSP_MMA_REGISTRAR_PARO]
+[dbo].[CLI547_AGMSP_MMA_GUARDAR_CHECKLIST]
+[dbo].[CLI547_AGMSP_MMA_CERRAR_TURNO]
+[dbo].[CLI547_AGMSP_MMA_APROBAR_REGISTRO]
+[dbo].[CLI547_AGMSP_MMA_CREAR_SESION]
+[dbo].[CLI547_AGMSP_MMA_REGISTRAR_BIN]
+[dbo].[CLI547_AGMSP_MMA_REGISTRAR_LECTURA_PORTERO]
+[dbo].[CLI547_AGMSP_MMA_GET_REGISTROS_SUPERVISOR]
+[dbo].[CLI547_AGMSP_MMA_GET_JORNADAS_SUPERVISOR]
+
+
+
+
+Ahora tengo todo lo necesario. Análisis completo:
+
+Análisis TPM — Qué tenemos implementado vs. qué falta
+✅ LO QUE SÍ ESTÁ IMPLEMENTADO
+Recolección de datos en el APK (fuente de los indicadores):
+
+Dato TPM requerido	Dónde se captura	Estado
+T_TC (Tiempo Total Calendario)	Hardcoded 480 min/turno	✅
+T_PP (Paradas Programadas)	Hardcoded 30 min (refrigerio)	✅ parcial
+T_TDO (Tiempo Disponible)	480 − 30 = 450 min	✅
+T_TR (Traslado ida/vuelta)	TIEMPOS_TURNO: hora_salida_taller ↔ hora_llegada_punto ↔ hora_salida_punto ↔ hora_llegada_taller	✅
+T_O (Tiempo de Operación)	HOROMETROS: horas_implemento × 60 (tractor para COSEC)	✅ Cumple guía (anexo: "horómetro del implemento detectará el T_O")
+T_PI (Paradas Internas/fallas)	PAROS_EQUIPOS + TIPOS_PARO con duracion_min	✅ estructura lista
+T_PE (Paradas Externas)	PAROS_EQUIPOS + TIPOS_PARO por categoria	✅ estructura lista
+Q hectáreas	REGISTROS_LOTES: area_trabajada_ha	✅
+Q bines cosecha	COSECHA_BINES: cantidad	✅
+Cálculos en SQL Server (vista + SPs):
+
+Indicador TPM (guía)	Fórmula	Estado
+GU = T_DO / T_TC (ec. 2.1)	Vista v_mma_indicadores_tpm	✅
+D = T_O / T_DO (ec. 3.1.1)	Vista	✅
+D_PR = T_T / T_DO (ec. 3.1.5)	Vista	✅
+D_MA = T_O / T_T (ec. 3.1.10)	Vista	✅
+I_TR = 1 − T_TR/T_DO (ec. 3.1.9)	Vista	✅
+R = Q / (T_O × C_N) (ec. 3.2.3)	Vista	⚠️ ver Issue A
+C = 1.0 (ec. 3.3.5)	Hardcoded	✅ correcto según guía (no hay retrabajos)
+EGE = D × R × C (ec. 3.1)	Vista	✅
+PTE = GU × EGE (ec. 1.1)	Vista	✅
+T_NO, T_MVO, T_EP	Vista	✅
+SPs de reporting implementados:
+
+CLI547_AGM_SP_MMA_TPM_TABLA_DIARIA — tabla día a día con % de cada indicador
+CLI547_AGM_SP_MMA_TPM_KPI_RESUMEN — semáforo verde/amarillo/rojo por indicador
+CLI547_AGM_SP_MMA_TPM_TIEMPOS_PRODUCTIVOS — desglose completo de 16 tiempos (T_TC → T_EP)
+CLI547_AGM_SP_MMA_TPM_PARETO_FALLAS — Pareto de fallas (herramienta 5 del Anexo 5)
+CLI547_AGM_SP_MMA_TPM_RANKING_MAQUINAS — ranking de máquinas por EGE
+🔴 PROBLEMAS CRÍTICOS (rompen en producción)
+Problema A — rendimiento_teorico no existe en la tabla PROCESOS
+
+La vista v_mma_tiempos_tpm (tablasyprocedimientos_produccion.sql:2150) hace:
+
+
+ISNULL(p.rendimiento_teorico, 1.0) AS capacidad_nominal
+Pero CLI547_AGM_MMA_PROCESOS no tiene esa columna — solo tiene codigo, nombre, requiere_bines, requiere_sublabores, tipo_registro, activo. La vista falla al compilar.
+
+Problema B — Códigos de tipos_paro NO coinciden con lo que espera la vista
+
+Los tipos_paro insertados en el script son: COMBUSTIBLE, MECANICO, HIDRAULICO, ELECTRICO, OPERATIVO, CLIMATICO, MANTENIMIENTO, OTROS
+
+La vista busca para T_PE: TRASLADO, ESPERA_AYUDANTE, CALIBRACION, ABASTECIMIENTO, COORDINACION, ESPERA_SUPERVISOR, CLIMA, CAPACITACION
+
+La vista busca para T_PI: FALLA_MECANICA, FALLA_ELECTRICA, NEUMATICO, FALTA_OPERADOR, MANTENIMIENTO_CORRECTIVO, MECANICO
+
+Solo MECANICO coincide. Resultado: T_PE = 0 y T_PI ≈ 0 → D=100%, GU=100%, lo cual es incorrecto.
+
+Problema C — SP ERP_SYNC_PAYLOAD_COMPLETO usa nombres de tabla sin _AGM_
+
+En las líneas ~1413–1494 del SP de sincronización, las queries internas todavía usan dbo.CLI547_MMA_PROCESOS, dbo.CLI547_MMA_CAJAS_CAMBIOS, dbo.CLI547_MMA_TIPOS_PARO, dbo.CLI547_MMA_CHECKLIST_ITEMS_CATALOGO, dbo.CLI547_MMA_SUBPROCESOS, dbo.CLI547_MMA_REGISTROS_DIARIOS, dbo.CLI547_MMA_HOROMETROS (sin _AGM_). El SP de sincronización falla en producción.
+
+Problema D — SP APROBAR_REGISTRO usa nombre de tabla sin _AGM_
+
+Línea ~1772: FROM dbo.CLI547_MMA_REGISTROS_DIARIOS en lugar de CLI547_AGM_MMA_REGISTROS_DIARIOS.
+
+⚠️ PROBLEMAS MENORES / LIMITACIONES
+Problema E — Naming convention inconsistente en los SPs de indicadores
+
+Todos los SPs del sistema usan CLI547_AGMSP_MMA_*. Los de indicadores usan CLI547_AGM_SP_MMA_TPM_*. No es un error funcional pero rompe la convención.
+
+Problema F — CREATE PROCEDURE en lugar de CREATE OR ALTER
+
+CLI547_AGM_SP_MMA_TPM_TABLA_DIARIA, PARETO_FALLAS, RANKING_MAQUINAS, METRICAS_RESUMEN y KPI_RESUMEN usan CREATE PROCEDURE. Si el script se ejecuta dos veces, falla. Solo TIEMPOS_PRODUCTIVOS usa CREATE OR ALTER.
+
+Problema G — Vistas sin prefijo dbo.
+
+v_mma_tiempos_tpm y v_mma_indicadores_tpm no tienen dbo. — son CREATE OR ALTER VIEW v_mma_* sin schema. Deberían ser dbo.v_mma_*.
+
+Problema H — T_TC y T_PP hardcoded, falta tabla PARAMETROS_TPM
+
+La tabla CLI547_AGM_MMA_PARAMETROS_TPM (que figura en implementcion.txt) no está en el script SQL. Se necesita para:
+
+C_N (capacidad nominal por proceso — solución al Problema A)
+T_TC / T_PP configurables por turno
+Umbrales de semáforo por indicador
+Problema I — INFORMATION_SCHEMA checks con nombres incorrectos
+
+Algunos guards IF NOT EXISTS en las primeras líneas del script usan TABLE_NAME='CLI547_MMA_*' (sin _AGM_), mientras las tablas reales son CLI547_AGM_MMA_*. Los guards no funcionan y podrían causar errores al re-ejecutar.
+
+Problema J — Referencias FK sin _AGM_
+
+Algunas cláusulas REFERENCES en tablas tempranas del script apuntan a dbo.CLI547_MMA_PROCESOS en vez de dbo.CLI547_AGM_MMA_PROCESOS.
+
+Problema K — 5 tablas en implementcion.txt ausentes del script SQL
+
+Tabla	Propósito
+CLI547_AGM_MMA_PARAMETROS_TPM	Capacidad nominal, umbrales KPI (crítica para TPM)
+CLI547_AGM_MMA_FOTOS_REGISTRO	Fotos adjuntas a registros
+CLI547_AGM_MMA_MENUS + ROL_MENUS	Sistema de menús por rol
+CLI547_AGM_MMA_REGISTROS_VEHICULO	Tabla separada para registros vehículo
+Resumen ejecutivo — Prioridades
+Prioridad	Acción
+🔴 1	Agregar rendimiento_teorico a PROCESOS o crear PARAMETROS_TPM con C_N por proceso
+🔴 2	Alinear códigos de TIPOS_PARO con lo que espera la vista (T_PE vs T_PI)
+🔴 3	Corregir ERP_SYNC_PAYLOAD_COMPLETO y APROBAR_REGISTRO — tablas sin _AGM_
+🟡 4	Cambiar todos los indicator SPs a CREATE OR ALTER y agregar dbo. a las vistas
+🟡 5	Estandarizar naming: CLI547_AGMSP_MMA_TPM_*
+🟡 6	Crear tabla CLI547_AGM_MMA_PARAMETROS_TPM y reemplazar los hardcodes
+🟢 7	Corregir INFORMATION_SCHEMA guards y FK references sin _AGM_
+¿Por dónde quieres empezar? Te recomiendo arrancar por el Problema A + B juntos (son la base de todo el TPM) y el Problema C (que rompe la sincronización del APK).
+
+
+
+
+
+
+
+
+
+

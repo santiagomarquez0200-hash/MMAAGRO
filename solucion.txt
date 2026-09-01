@@ -1,0 +1,48 @@
+se cambio la estructura de la tabla fallas_mecanicas
+18	QUEM	Quemado	ELECTRICO	Diodos, transistores, bobinados	1
+19	CORT	Cortocircuitado	ELECTRICO	Cableado, componentes electrónicos	1
+20	ABIE	Abierto	ELECTRICO	Circuitos, bobinas, soldaduras	1
+21	SULF	Sulfatado	ELECTRICO	Bornes de batería, placas, Contactos, terminales	1
+22	CARB	Carbonizado	ELECTRICO	Placas de contacto, conectores	1
+23	DERR	Derretido	ELECTRICO	Aislantes, conectores	1
+24	FUND	Fundido	ELECTRICO	Fusibles, soldaduras	1
+25	DESP	Desprogramado	ELECTRICO	Controladores electrónicos	1
+26	PELA	Pelado	ELECTRICO	Cables, aislantes, bandas	1
+43	CORR	Corroído	FISICOQUIMICO	Carrocerías, conexiones	1
+44	EROS	Erosionado	FISICOQUIMICO	Inyectores, toberas, impulsores, carcasas	1
+45	CONG	Congelado	FISICOQUIMICO	Válvulas, líneas de líquido	1
+46	EVAP	Evaporado	FISICOQUIMICO	Refrigerantes	1
+27	OBST	Obstruido	HIDRAULICO	Filtros, conductos, válvulas	1
+28	FUG	Fugas	HIDRAULICO	Acoplamientos, mangueras, retenes	1
+29	CONTAM	Contaminado	HIDRAULICO	Aceites, fluidos, filtros	1
+30	AIRE	Aireado	HIDRAULICO	Líneas de combustible, sistemas hidráulicos	1
+31	SOBREP	Sobrepresurizado	HIDRAULICO	Bombas, líneas	1
+32	DESPRE	Despresurizado	HIDRAULICO	Válvulas, acumuladores	1
+33	CAVIT	Cavitado	HIDRAULICO	Bombas, inyectores	1
+34	OXID	Oxidado	HIDRAULICO	Cilindros, superficies metálicas	1
+35	REVEN	Reventado	HIDRAULICO	Mangueras, fuelles, juntas	1
+36	PIC	Picado	HIDRAULICO	Llantas o Bástagos de cilindros hidráulicos	1
+37	SINLUB	Sin lubricación	LUBRICACION	Cojinetes, bujes	1
+38	DILUIDO	Diluido	LUBRICACION	Aceites o grasas	1
+39	CONTLUB	Contaminado	LUBRICACION	Lubricantes, filtros	1
+40	EMULS	Emulsionado	LUBRICACION	Aceites con agua	1
+41	GOTEO	Con goteo o fuga	LUBRICACION	Orings, retenes	1
+42	HUMED	Humedecido	LUBRICACION	Retenes, empaques	1
+1	DESG	Desgastado	MECANICO	Ejes, bujes, engranajes	1
+2	ROTO	Roto	MECANICO	Ejes, pernos, resortes	1
+3	FRAC	Fracturado	MECANICO	Estructuras, carcasas	1
+4	AGRI	Agrietado	MECANICO	Bastidores, carcasas, fundiciones	1
+5	DEFO	Deformado	MECANICO	Ejes, paneles, brazos	1
+6	DOBL	Doblado	MECANICO	Palancas, varillas, tuberías	1
+7	DESAL	Desalineado	MECANICO	Ejes, poleas, tren delantero	1
+8	DESBAL	Desbalanceado	MECANICO	Rotores, ventiladores, poleas	1
+9	ATAS	Atascado	MECANICO	Válvulas, mecanismos, pistones	1
+10	PEGA	Pegado	MECANICO	Pistones, válvulas, contactos eléctricos	1
+11	TRAB	Trabado	MECANICO	Rodamientos, engranajes, mecanismos	1
+12	FLOJ	Flojo	MECANICO	Pernos, tuercas, uniones	1
+13	DESAJ	Desajustado	MECANICO	Mecanismos de control, válvulas	1
+14	RAYA	Rayado	MECANICO	Superficies de cilindros, émbolos, vástagos	1
+15	RASG	Rasgado	MECANICO	Correas, fajas, bandas transportadoras	1
+16	TORC	Torcido	MECANICO	Ejes, brazos, vástagos	1
+17	ESTI	Estirado	MECANICO	Tornillos, varillas sometidas a tracción excesiva	1
+ajustalo vale a la vista para que muestre las selecciones correspondiente cuando se elecciona en paros las fallas mecanicas ahora refleja estos tambien si 
