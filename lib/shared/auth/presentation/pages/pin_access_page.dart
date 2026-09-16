@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:agro_aplicaciones/core/config/app_environment.dart';
@@ -12,14 +13,14 @@ import 'package:agro_aplicaciones/shared/auth/presentation/blocs/auth_event.dart
 import 'package:agro_aplicaciones/shared/auth/presentation/blocs/auth_state.dart';
 
 // ─── Paleta ────────────────────────────────────────────────────────────────────
-const _kBg   = Color(0xFF060E08);
+const _kBg = Color(0xFF060E08);
 const _kCard = Color(0xFF0E2016);
-const _kLime      = Color(0xFF8CC53F);
-const _kLimeDim   = Color(0xFF5A8428);
-const _kMuted     = Color(0xFF4A7055);
-const _kBorder    = Color(0xFF1F3D28);
-const _kText      = Colors.white;
-const _kTextDim   = Color(0xFF7CA885);
+const _kLime = Color(0xFF8CC53F);
+const _kLimeDim = Color(0xFF5A8428);
+const _kMuted = Color(0xFF4A7055);
+const _kBorder = Color(0xFF1F3D28);
+const _kText = Colors.white;
+const _kTextDim = Color(0xFF7CA885);
 
 class PinAccessPage extends StatefulWidget {
   const PinAccessPage({super.key});
@@ -30,22 +31,23 @@ class PinAccessPage extends StatefulWidget {
 
 class _PinAccessPageState extends State<PinAccessPage>
     with TickerProviderStateMixin {
-  final _formKey       = GlobalKey<FormState>();
-  final _usuarioCtrl   = TextEditingController();
-  final _passwordCtrl  = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _usuarioCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
 
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 
-  bool   _obscurePassword    = true;
-  bool   _guardarCredenciales = false;
-  String _rolSeleccionado    = 'operador';
+  bool _obscurePassword = true;
+  bool _guardarCredenciales = false;
+  String _rolSeleccionado = 'operador';
+  String _versionApp = '';
 
   late final AnimationController _fadeCtrl;
   late final AnimationController _slideCtrl;
-  late final Animation<double>   _fadeAnim;
-  late final Animation<Offset>   _slideAnim;
+  late final Animation<double> _fadeAnim;
+  late final Animation<Offset> _slideAnim;
 
   // ── Ciclo de vida ─────────────────────────────────────────────────────────
 
@@ -60,11 +62,12 @@ class _PinAccessPageState extends State<PinAccessPage>
         vsync: this, duration: const Duration(milliseconds: 650))
       ..forward();
 
-    _fadeAnim  = CurvedAnimation(parent: _fadeCtrl,  curve: Curves.easeOut);
+    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
         .animate(CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOut));
 
     _cargarCredenciales();
+    _cargarVersionApp();
   }
 
   @override
@@ -83,27 +86,35 @@ class _PinAccessPageState extends State<PinAccessPage>
     if (!(prefs.getBool('guardar_credenciales') ?? false)) return;
     final savedUser = await _storage.read(key: 'saved_usuario');
     final savedPass = await _storage.read(key: 'saved_password');
-    final savedRol  = await _storage.read(key: 'saved_rol');
+    final savedRol = await _storage.read(key: 'saved_rol');
     if (savedUser != null && savedPass != null && mounted) {
       setState(() {
-        _usuarioCtrl.text   = savedUser;
-        _passwordCtrl.text  = savedPass;
+        _usuarioCtrl.text = savedUser;
+        _passwordCtrl.text = savedPass;
         if (savedRol != null) _rolSeleccionado = savedRol;
         _guardarCredenciales = true;
       });
     }
   }
 
+  Future<void> _cargarVersionApp() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() {
+      _versionApp = '${info.version} (${info.buildNumber})';
+    });
+  }
+
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    final usuario  = _usuarioCtrl.text.trim();
+    final usuario = _usuarioCtrl.text.trim();
     final password = _passwordCtrl.text;
 
     final prefs = await SharedPreferences.getInstance();
     if (_guardarCredenciales) {
-      await _storage.write(key: 'saved_usuario',  value: usuario);
+      await _storage.write(key: 'saved_usuario', value: usuario);
       await _storage.write(key: 'saved_password', value: password);
-      await _storage.write(key: 'saved_rol',      value: _rolSeleccionado);
+      await _storage.write(key: 'saved_rol', value: _rolSeleccionado);
       await prefs.setBool('guardar_credenciales', true);
     } else {
       await _storage.delete(key: 'saved_usuario');
@@ -114,11 +125,11 @@ class _PinAccessPageState extends State<PinAccessPage>
 
     if (!mounted) return;
     context.read<AuthBloc>().add(AuthLoginRequested(
-          codigo:   usuario,
-          pin:      password,
+          codigo: usuario,
+          pin: password,
           username: usuario,
           password: password,
-          rol:      _rolSeleccionado,
+          rol: _rolSeleccionado,
         ));
   }
 
@@ -162,8 +173,8 @@ class _PinAccessPageState extends State<PinAccessPage>
                     physics: const ClampingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(horizontal: 26),
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight),
+                      constraints:
+                          BoxConstraints(minHeight: constraints.maxHeight),
                       child: IntrinsicHeight(
                         child: Form(
                           key: _formKey,
@@ -211,8 +222,7 @@ class _PinAccessPageState extends State<PinAccessPage>
   // ── Botón configuración de entorno ────────────────────────────────────────
 
   Widget _buildEnvButton(BuildContext context) {
-    final isProd =
-        AppEnvironment.erpBaseUrl == AppEnvironment.urlProduccion;
+    final isProd = AppEnvironment.erpBaseUrl == AppEnvironment.urlProduccion;
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -264,8 +274,7 @@ class _PinAccessPageState extends State<PinAccessPage>
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(
-                color: _kLime.withValues(alpha: 0.2), width: 1),
+            border: Border.all(color: _kLime.withValues(alpha: 0.2), width: 1),
             color: _kLime.withValues(alpha: 0.04),
           ),
         ),
@@ -280,8 +289,8 @@ class _PinAccessPageState extends State<PinAccessPage>
               end: Alignment.bottomRight,
               colors: [Color(0xFF1A3D28), Color(0xFF0F2518)],
             ),
-            border: Border.all(
-                color: _kLime.withValues(alpha: 0.45), width: 1.5),
+            border:
+                Border.all(color: _kLime.withValues(alpha: 0.45), width: 1.5),
             boxShadow: [
               BoxShadow(
                 color: _kLime.withValues(alpha: 0.22),
@@ -373,7 +382,7 @@ class _PinAccessPageState extends State<PinAccessPage>
             ),
           ),
           const Spacer(),
-          Icon(Icons.lock_outline_rounded, size: 16, color: _kMuted),
+          const Icon(Icons.lock_outline_rounded, size: 16, color: _kMuted),
         ]),
         const SizedBox(height: 20),
 
@@ -383,14 +392,14 @@ class _PinAccessPageState extends State<PinAccessPage>
 
         // Separador
         Row(children: [
-          Expanded(child: Divider(color: _kBorder, thickness: 0.8)),
+          const Expanded(child: Divider(color: _kBorder, thickness: 0.8)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text('credenciales',
                 style: TextStyle(
                     color: _kMuted.withValues(alpha: 0.6), fontSize: 10)),
           ),
-          Expanded(child: Divider(color: _kBorder, thickness: 0.8)),
+          const Expanded(child: Divider(color: _kBorder, thickness: 0.8)),
         ]),
         const SizedBox(height: 18),
 
@@ -424,10 +433,10 @@ class _PinAccessPageState extends State<PinAccessPage>
 
   Widget _buildRolSelector() {
     final roles = [
-      ('operador',   'Operario',   Icons.agriculture_rounded),
-      ('portero',    'Portero',    Icons.security_rounded),
+      ('operador', 'Operario', Icons.agriculture_rounded),
+      ('portero', 'Portero', Icons.security_rounded),
       ('supervisor', 'Supervisor', Icons.manage_accounts_rounded),
-      ('mecanico',   'Mecánico',   Icons.build_rounded),
+      ('mecanico', 'Mecánico', Icons.build_rounded),
     ];
 
     return Container(
@@ -438,9 +447,7 @@ class _PinAccessPageState extends State<PinAccessPage>
       ),
       padding: const EdgeInsets.all(4),
       child: Row(
-        children: roles
-            .map((r) => _buildRolTab(r.$1, r.$2, r.$3))
-            .toList(),
+        children: roles.map((r) => _buildRolTab(r.$1, r.$2, r.$3)).toList(),
       ),
     );
   }
@@ -485,8 +492,7 @@ class _PinAccessPageState extends State<PinAccessPage>
               style: TextStyle(
                 color: sel ? Colors.white : _kMuted,
                 fontSize: 10.5,
-                fontWeight:
-                    sel ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ]),
@@ -510,8 +516,7 @@ class _PinAccessPageState extends State<PinAccessPage>
       keyboardType: TextInputType.text,
       textInputAction: textInputAction,
       autocorrect: false,
-      style: const TextStyle(
-          color: _kText, fontSize: 14.5, letterSpacing: 0.2),
+      style: const TextStyle(color: _kText, fontSize: 14.5, letterSpacing: 0.2),
       decoration: _fieldDecoration(label: label, hint: hint, icon: icon),
       validator: validator,
     );
@@ -523,8 +528,7 @@ class _PinAccessPageState extends State<PinAccessPage>
       obscureText: _obscurePassword,
       textInputAction: TextInputAction.done,
       onFieldSubmitted: (_) => _submit(),
-      style: const TextStyle(
-          color: _kText, fontSize: 14.5, letterSpacing: 0.5),
+      style: const TextStyle(color: _kText, fontSize: 14.5, letterSpacing: 0.5),
       decoration: _fieldDecoration(
         label: 'Contraseña',
         hint: '········',
@@ -539,12 +543,10 @@ class _PinAccessPageState extends State<PinAccessPage>
             color: _kMuted,
             size: 19,
           ),
-          onPressed: () =>
-              setState(() => _obscurePassword = !_obscurePassword),
+          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
         ),
       ),
-      validator: (v) =>
-          (v?.isEmpty ?? true) ? 'Ingrese su contraseña' : null,
+      validator: (v) => (v?.isEmpty ?? true) ? 'Ingrese su contraseña' : null,
     );
   }
 
@@ -560,15 +562,13 @@ class _PinAccessPageState extends State<PinAccessPage>
     return InputDecoration(
       labelText: label,
       hintText: hint,
-      labelStyle:
-          const TextStyle(color: _kTextDim, fontSize: 12.5),
-      hintStyle: TextStyle(
-          color: _kMuted.withValues(alpha: 0.45), fontSize: 13),
+      labelStyle: const TextStyle(color: _kTextDim, fontSize: 12.5),
+      hintStyle:
+          TextStyle(color: _kMuted.withValues(alpha: 0.45), fontSize: 13),
       prefixIcon: Icon(icon, color: _kMuted, size: 19),
       filled: true,
       fillColor: Colors.black.withValues(alpha: 0.25),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       border: base,
       enabledBorder: base,
       focusedBorder: OutlineInputBorder(
@@ -591,8 +591,7 @@ class _PinAccessPageState extends State<PinAccessPage>
 
   Widget _buildRecordarRow() {
     return GestureDetector(
-      onTap: () =>
-          setState(() => _guardarCredenciales = !_guardarCredenciales),
+      onTap: () => setState(() => _guardarCredenciales = !_guardarCredenciales),
       behavior: HitTestBehavior.opaque,
       child: Row(children: [
         AnimatedContainer(
@@ -608,8 +607,7 @@ class _PinAccessPageState extends State<PinAccessPage>
             ),
           ),
           child: _guardarCredenciales
-              ? const Icon(Icons.check_rounded,
-                  size: 11, color: Colors.white)
+              ? const Icon(Icons.check_rounded, size: 11, color: Colors.white)
               : null,
         ),
         const SizedBox(width: 9),
@@ -645,9 +643,7 @@ class _PinAccessPageState extends State<PinAccessPage>
                       end: Alignment.bottomRight,
                       colors: [Color(0xFF7DB535), Color(0xFF4E7C22)],
                     ),
-              color: loading
-                  ? _kLimeDim.withValues(alpha: 0.3)
-                  : null,
+              color: loading ? _kLimeDim.withValues(alpha: 0.3) : null,
               borderRadius: BorderRadius.circular(13),
               boxShadow: loading
                   ? null
@@ -711,8 +707,8 @@ class _PinAccessPageState extends State<PinAccessPage>
         Container(
           width: 4,
           height: 4,
-          decoration: const BoxDecoration(
-              color: _kLimeDim, shape: BoxShape.circle),
+          decoration:
+              const BoxDecoration(color: _kLimeDim, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
         const Text(
@@ -730,12 +726,25 @@ class _PinAccessPageState extends State<PinAccessPage>
           'Agrokasa · Pisco',
           style: TextStyle(color: _kMuted, fontSize: 11),
         ),
+        if (_versionApp.isNotEmpty) ...[
+          const SizedBox(width: 8),
+          Container(
+            width: 1,
+            height: 10,
+            color: _kBorder,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'v$_versionApp',
+            style: const TextStyle(color: _kMuted, fontSize: 11),
+          ),
+        ],
         const SizedBox(width: 6),
         Container(
           width: 4,
           height: 4,
-          decoration: const BoxDecoration(
-              color: _kLimeDim, shape: BoxShape.circle),
+          decoration:
+              const BoxDecoration(color: _kLimeDim, shape: BoxShape.circle),
         ),
       ],
     );
@@ -778,10 +787,8 @@ class _BgPainter extends CustomPainter {
     final arc1 = Paint()
       ..color = const Color(0xFF8CC53F).withValues(alpha: 0.04)
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(
-        Offset(sz.width + sz.width * 0.1, -sz.height * 0.05),
-        sz.width * 0.75,
-        arc1);
+    canvas.drawCircle(Offset(sz.width + sz.width * 0.1, -sz.height * 0.05),
+        sz.width * 0.75, arc1);
 
     // Círculo stroke top-right
     final arc2 = Paint()
@@ -789,9 +796,7 @@ class _BgPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     canvas.drawCircle(
-        Offset(sz.width * 0.85, sz.height * 0.0),
-        sz.width * 0.55,
-        arc2);
+        Offset(sz.width * 0.85, sz.height * 0.0), sz.width * 0.55, arc2);
 
     // Círculo stroke bottom-left
     final arc3 = Paint()
@@ -799,9 +804,7 @@ class _BgPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
     canvas.drawCircle(
-        Offset(-sz.width * 0.15, sz.height * 1.05),
-        sz.width * 0.65,
-        arc3);
+        Offset(-sz.width * 0.15, sz.height * 1.05), sz.width * 0.65, arc3);
 
     // Pequeños puntos decorativos dispersos
     final dotPaint = Paint()
@@ -816,17 +819,15 @@ class _BgPainter extends CustomPainter {
       const Offset(0.50, 0.93),
     ];
     for (final pt in rng) {
-      canvas.drawCircle(Offset(sz.width * pt.dx, sz.height * pt.dy), 2.0,
-          dotPaint);
+      canvas.drawCircle(
+          Offset(sz.width * pt.dx, sz.height * pt.dy), 2.0, dotPaint);
     }
 
     // Líneas diagonales sutiles (trama)
     final linePaint = Paint()
       ..color = const Color(0xFF8CC53F).withValues(alpha: 0.025)
       ..strokeWidth = 0.5;
-    for (var i = -sz.height.toInt();
-        i < sz.width.toInt() * 2;
-        i += 48) {
+    for (var i = -sz.height.toInt(); i < sz.width.toInt() * 2; i += 48) {
       canvas.drawLine(
         Offset(i.toDouble(), 0),
         Offset(i.toDouble() + sz.height * math.tan(math.pi / 4), sz.height),

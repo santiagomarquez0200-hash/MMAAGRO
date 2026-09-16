@@ -35,6 +35,7 @@ class RegistroDiario extends Equatable {
   final int? implementoIdErp;
   final String? implementoCodigo;
   final String? implementoDescripcion;
+  final String? implementoCodigoInterno;
 
   // ── Caja de cambios (PostgreSQL) ──
   final int? cajaCambiosId;
@@ -88,6 +89,7 @@ class RegistroDiario extends Equatable {
     this.implementoIdErp,
     this.implementoCodigo,
     this.implementoDescripcion,
+    this.implementoCodigoInterno,
     this.cajaCambiosId,
     this.cajaCambiosNombre,
     this.subprocesoId,
@@ -123,7 +125,33 @@ class RegistroDiario extends Equatable {
       paros.fold(0, (sum, p) => sum + (p.duracionMin ?? 0));
 
   @override
-  List<Object?> get props => [id, numeroRegistro, estado, sincronizado];
+  List<Object?> get props => [
+    id,
+    numeroRegistro,
+    fecha,
+    turno,
+    procesoId,
+    procesoNombre,
+    procesoCodigo,
+    cultivoIdErp,
+    cultivoNombreEspecie,
+    cultivoCodigoEspecie,
+    operadorIdErp,
+    operadorCodigo,
+    operadorNombre,
+    supervisorIdErp,
+    supervisorCodigo,
+    supervisorNombre,
+    tractorIdErp,
+    tractorCodigo,
+    tractorDescripcion,
+    implementoIdErp,
+    implementoCodigo,
+    implementoDescripcion,
+    implementoCodigoInterno,
+    estado,
+    sincronizado,
+  ];
 }
 
 // ─── Subentidades ─────────────────────────────────────────────────────────────

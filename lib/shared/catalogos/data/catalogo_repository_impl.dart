@@ -504,16 +504,41 @@ class CatalogoRepositoryImpl implements CatalogoRepository {
         name: _tag);
     // Borrar primero evita items huérfanos cuando el ERP reasigna IDs
     await _db.catalogoDao.deleteAllChecklistItems();
-    await _db.catalogoDao.upsertChecklistItems(data
-        .map((r) => ChecklistItemsLocalCompanion(
-              id: Value(r['item_id'] as int),
-              categoriaId: Value(r['categoria_id'] as int),
-              categoriaNombre: Value(r['categoria']?.toString() ?? ''),
-              nombre: Value(r['item_nombre']?.toString() ?? ''),
-              orden: Value(r['orden'] as int? ?? 0),
-              tipoRegistro: Value(r['tipo_registro']?.toString() ?? 'tractor'),
-            ))
-        .toList());
+    int? asInt(dynamic value) {
+      if (value is num) return value.toInt();
+      return int.tryParse(value?.toString() ?? '');
+    }
+
+    bool asBool(dynamic value) {
+      if (value is bool) return value;
+      if (value is num) return value != 0;
+      return value?.toString().toLowerCase() == 'true' || value == '1';
+    }
+
+    final rows = <ChecklistItemsLocalCompanion>[];
+    for (final r in data) {
+      // Acepta tanto los alias snake_case del SP como los alias de la consulta
+      // directa: ItemId, CategoriaId, Categoria, Item y OrdenItem.
+      final itemId = asInt(r['item_id'] ?? r['ItemId']);
+      final categoriaId = asInt(r['categoria_id'] ?? r['CategoriaId']);
+      if (itemId == null || categoriaId == null) {
+        developer.log('checklist item ignorado por IDs inválidos: $r',
+            name: _tag);
+        continue;
+      }
+      rows.add(ChecklistItemsLocalCompanion(
+        id: Value(itemId),
+        categoriaId: Value(categoriaId),
+        categoriaNombre: Value(
+            (r['categoria'] ?? r['Categoria'])?.toString() ?? ''),
+        nombre: Value((r['item_nombre'] ?? r['Item'])?.toString() ?? ''),
+        orden: Value(asInt(r['orden'] ?? r['OrdenItem']) ?? 0),
+        tipoRegistro: Value(
+            (r['tipo_registro'] ?? r['TipoRegistro'])?.toString() ?? 'tractor'),
+        activo: Value(asBool(r['activo'] ?? r['Activo'] ?? true)),
+      ));
+    }
+    await _db.catalogoDao.upsertChecklistItems(rows);
   }
 
   Future<void> _guardarUltimoHorometroTractores(

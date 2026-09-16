@@ -39,7 +39,7 @@ class GpsSyncService {
   bool _isSyncing = false;
 
   /// Tabla GPS en SQLite — nombre físico definido por el cliente.
-  static const _kGpsTable = '"CLI547_AGM_Punto_gps_maquinaria"';
+  static const _kGpsTable = '"CLI547_AGM_Ruta_maquinaria"';
 
   /// Intervalo del timer periódico de flush.
   /// 5 min cubre: GPS registra c/2 min → puntos llegan al servidor en ≤ 5 min.

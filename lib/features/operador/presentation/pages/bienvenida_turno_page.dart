@@ -298,7 +298,9 @@ ${idOk && !_sinIdErp ? '✅ ID encontrado ($_diagGetUsuarioErpId) y botón habil
   Future<void> _iniciarJornada() async {
     if (_saving) return;
     if (_estadoPuntualidad == _EstadoPuntualidad.anticipado ||
-        _sinIdErp) return;
+        _sinIdErp) {
+      return;
+    }
 
     setState(() => _saving = true);
 

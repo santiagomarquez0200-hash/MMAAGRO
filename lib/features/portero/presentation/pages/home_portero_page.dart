@@ -615,7 +615,9 @@ class _HomePorteroPageState extends State<HomePorteroPage> {
     // mismo ciclo de sincronización, lo que dispararía múltiples cargas N+1.
     final ahora = DateTime.now();
     if (_ultimoReloadHistorial != null &&
-        ahora.difference(_ultimoReloadHistorial!).inSeconds < 5) return;
+        ahora.difference(_ultimoReloadHistorial!).inSeconds < 5) {
+      return;
+    }
     _ultimoReloadHistorial = ahora;
     _cargarHistorialDelDia();
   }
@@ -1027,7 +1029,7 @@ class _HomePorteroPageState extends State<HomePorteroPage> {
   Widget _buildCultivoPicker(List<Cultivo> cultivos) {
     final requerido = _mostrarValidacion && _cultivoSeleccionado == null;
     return DropdownButtonFormField<Cultivo>(
-      value: _cultivoSeleccionado,
+      initialValue: _cultivoSeleccionado,
       isExpanded: true,
       decoration: InputDecoration(
         labelText: 'Cultivo *',

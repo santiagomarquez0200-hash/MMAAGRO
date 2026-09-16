@@ -176,7 +176,7 @@ class CatalogoBloc extends Bloc<CatalogoEvent, CatalogoState> {
     final before = await _leerCuentas();
     developer.log('conteos antes del sync: $before', name: _tag);
 
-    emit(CatalogoSyncEnProgreso(items: _syncItems));
+    emit(const CatalogoSyncEnProgreso(items: _syncItems));
 
     final result = await _syncCatalogos(const NoParams());
 

@@ -113,7 +113,11 @@ BEGIN
         SET @v_marchas      = JSON_QUERY(@p_payload, '$.marchas');
         -- ruta_wkt: LINESTRING o POINT en WKT. NULL cuando APK sin GPS o jornada
         -- sin puntos grabados → el bloque GPS se omite y no se inserta nada.
-        SET @v_ruta_wkt               = NULLIF(LTRIM(RTRIM(JSON_VALUE(@p_payload, '$.ruta_wkt'))), '');
+        -- JSON_VALUE limita el resultado a 4000 caracteres; una ruta normal
+        -- puede superar ese tamaño. OPENJSON con NVARCHAR(MAX) conserva todo el WKT.
+        SELECT @v_ruta_wkt = NULLIF(LTRIM(RTRIM(ruta_wkt)), '')
+        FROM OPENJSON(@p_payload)
+        WITH (ruta_wkt NVARCHAR(MAX) '$.ruta_wkt');
         -- Analytics GPS (v4+) — calculados en el APK desde los puntos locales
         SET @v_gps_km_trabajo         = TRY_CAST(JSON_VALUE(@p_payload, '$.gps_km_trabajo')         AS DECIMAL(10,3));
         SET @v_gps_km_traslado        = TRY_CAST(JSON_VALUE(@p_payload, '$.gps_km_traslado')        AS DECIMAL(10,3));

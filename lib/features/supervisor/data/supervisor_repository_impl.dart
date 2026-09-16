@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'package:dartz/dartz.dart';
-import 'package:flutter/foundation.dart';
 import 'package:agro_aplicaciones/core/config/app_environment.dart';
 import 'package:agro_aplicaciones/core/errors/exceptions.dart';
 import 'package:agro_aplicaciones/core/errors/failures.dart';

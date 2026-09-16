@@ -89,8 +89,8 @@ class MecanicoRepositoryImpl implements MecanicoRepository {
     };
     await _db.outboxDao.insertEntry(OutboxEntriesCompanion(
       registroLocalId: Value(params.paroId),
-      endpoint: Value('/mecanico/completar-falla'),
-      method: Value('POST'),
+      endpoint: const Value('/mecanico/completar-falla'),
+      method: const Value('POST'),
       payloadJson: Value(jsonEncode(payload)),
     ));
   }

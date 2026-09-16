@@ -477,9 +477,8 @@ class RegistroRepositoryImpl implements RegistroRepository {
     // ≥ 2 puntos → LINESTRING; 1 punto → POINT; 0 puntos → null (campo omitido).
     final gpsRows = await _db.customSelect(
       'SELECT longitud, latitud, velocidad_kmh, tipo_movimiento, sublote_id, '
-      '       lote_nombre, captured_at '
-      'FROM "CLI547_AGM_Punto_gps_maquinaria" p '
-      'LEFT JOIN lotes_local l ON l.id_erp = p.sublote_id '
+      '       captured_at '
+      'FROM "CLI547_AGM_Ruta_maquinaria" p '
       'WHERE p.registro_id = ? ORDER BY p.secuencia',
       variables: [Variable.withString(rid)],
     ).get();
@@ -517,7 +516,8 @@ class RegistroRepositoryImpl implements RegistroRepository {
       final lon    = row.read<double>('longitud');
       final at     = row.readNullable<int>('captured_at') ?? 0;
       final sublId = row.readNullable<int>('sublote_id');
-      final sublNm = row.readNullable<String>('lote_nombre');
+      // lotes_local no existe en la base local; el nombre del sublote queda vacío.
+      const sublNm = '';
 
       // Distancia desde el punto anterior
       if (prevLat != null && prevLon != null) {
@@ -543,7 +543,7 @@ class RegistroRepositoryImpl implements RegistroRepository {
       }
       // Tiempo por sublote
       if (sublId != null && tipo == 'TRABAJO') {
-        subloteMap.putIfAbsent(sublId, () => {'nombre': sublNm ?? '', 'seg': 0});
+        subloteMap.putIfAbsent(sublId, () => {'nombre': sublNm, 'seg': 0});
         if (prevAt != null && prevAt > 0 && at > 0 && prevTipo == 'TRABAJO') {
           final dtSeg = ((at - prevAt) / 1000.0).clamp(0, 60).toInt();
           subloteMap[sublId]!['seg'] = (subloteMap[sublId]!['seg'] as int) + dtSeg;
@@ -1078,6 +1078,7 @@ class RegistroRepositoryImpl implements RegistroRepository {
       tractorDescripcion: row.tractorDescripcion,
       implementoIdErp: row.implementoIdErp,
       implementoCodigo: row.implementoCodigo,
+      implementoCodigoInterno: row.implementoCodigo,
       implementoDescripcion: row.implementoDescripcion,
       cajaCambiosId: row.cajaCambiosId,
       cajaCambiosNombre: row.cajaCambiosNombre,
@@ -1508,7 +1509,7 @@ class RegistroRepositoryImpl implements RegistroRepository {
     // El SP v3 lo inserta en CLI547_AGM_Ruta_maquinaria vía GEOGRAPHY::STGeomFromText.
     final gpsRows2 = await _db.customSelect(
       'SELECT longitud, latitud '
-      'FROM "CLI547_AGM_Punto_gps_maquinaria" '
+      'FROM "CLI547_AGM_Ruta_maquinaria" '
       'WHERE registro_id = ? ORDER BY secuencia',
       variables: [Variable.withString(registroId)],
     ).get();

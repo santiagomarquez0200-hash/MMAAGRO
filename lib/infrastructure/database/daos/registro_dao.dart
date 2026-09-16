@@ -187,7 +187,7 @@ class RegistroDao extends DatabaseAccessor<AppDatabase>
 
         // Puntos GPS de trazabilidad (tabla con nombre físico del cliente)
         await attachedDatabase.customStatement(
-          'DELETE FROM "CLI547_AGM_Punto_gps_maquinaria" WHERE registro_id = ?',
+          'DELETE FROM "CLI547_AGM_Ruta_maquinaria" WHERE registro_id = ?',
           [registroId],
         );
       });

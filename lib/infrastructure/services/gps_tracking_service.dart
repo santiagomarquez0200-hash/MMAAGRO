@@ -12,7 +12,7 @@ import '../database/app_database.dart';
 // ─── Constantes de configuración ─────────────────────────────────────────────
 
 /// Nombre físico de la tabla GPS en SQLite.
-const _kGpsTable = 'CLI547_AGM_Punto_gps_maquinaria';
+const _kGpsTable = 'CLI547_AGM_Ruta_maquinaria';
 
 /// SharedPreferences key para persistir el registro activo entre sesiones.
 const _kPrefKeyRegistroActivo = 'gps_tracking_registro_id';
@@ -460,7 +460,9 @@ class GpsTrackingService {
     for (final s in _sublotes) {
       // Pre-filtro rápido por bounding box antes de correr el PIP completo
       if (lat < s.bboxMinLat || lat > s.bboxMaxLat ||
-          lon < s.bboxMinLon || lon > s.bboxMaxLon) continue;
+          lon < s.bboxMinLon || lon > s.bboxMaxLon) {
+        continue;
+      }
       if (_puntoEnPoligono(lon, lat, s.vertices)) return s;
     }
     return null;
@@ -513,7 +515,7 @@ class GpsTrackingService {
         showBackgroundLocationIndicator: true,
       );
     } else {
-      return LocationSettings(
+      return const LocationSettings(
         accuracy: LocationAccuracy.bestForNavigation,
         distanceFilter: 0,
       );

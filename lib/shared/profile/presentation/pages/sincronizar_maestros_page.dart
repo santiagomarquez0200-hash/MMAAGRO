@@ -324,10 +324,10 @@ class _HeaderCard extends StatelessWidget {
                         )
                       : AnimatedBuilder(
                           animation: barAnim,
-                          builder: (_, __) => LinearProgressIndicator(
+                          builder: (_, __) => const LinearProgressIndicator(
                             value: null, // indeterminado
                             backgroundColor: Colors.white12,
-                            valueColor: const AlwaysStoppedAnimation<Color>(
+                            valueColor: AlwaysStoppedAnimation<Color>(
                               Color(0xFF8CC53F),
                             ),
                             minHeight: 6,
@@ -372,7 +372,7 @@ class _SyncItemTile extends StatelessWidget {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 350),
       child: ListTile(
-        key: ValueKey('$isLoading${revealedCount}'),
+        key: ValueKey('$isLoading$revealedCount'),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
         leading: Container(
