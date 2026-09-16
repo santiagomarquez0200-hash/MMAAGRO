@@ -229,8 +229,12 @@ class _EditarRegistroVehiculoPageState
     _horaLlegadaTallerCtrl.dispose();
     _observacionesCtrl.dispose();
     _supervisorNombreCtrl.dispose();
-    for (var r in _combustibles) r.dispose();
-    for (var r in _paros) r.dispose();
+    for (var r in _combustibles) {
+      r.dispose();
+    }
+    for (var r in _paros) {
+      r.dispose();
+    }
     super.dispose();
   }
 
@@ -864,7 +868,7 @@ class _EditarRegistroVehiculoPageState
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: isSel ? color.withOpacity(0.1) : Colors.white,
+          color: isSel ? color.withValues(alpha: 0.1) : Colors.white,
           border:
               Border.all(color: isSel ? color : Colors.grey.shade300, width: 2),
           borderRadius: BorderRadius.circular(12),

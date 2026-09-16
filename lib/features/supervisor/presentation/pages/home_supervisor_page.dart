@@ -141,20 +141,22 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
                 turno: _turnoSeleccionado,
                 fecha: fecha,
               ));
-      if (mounted)
+      if (mounted) {
         setState(() {
           _reporte = rows;
           _loadingReporte = false;
           _datosReporteCargados = true;
           _ultimaActualizacion = DateTime.now();
         });
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _reporteError = _mensajeError(e);
           _loadingReporte = false;
           // _reporte conserva los datos anteriores para no mostrar vacío
         });
+      }
     }
   }
 
@@ -503,7 +505,7 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
           if (usuario != null)
             Text(
               usuario.nombreCompleto.toUpperCase(),
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: _kLime,
@@ -662,8 +664,8 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
           _tabController.animateTo(2);
         }),
 
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Divider(color: _kBorder),
         ),
 
@@ -680,8 +682,8 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
         }),
 
         const Spacer(),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Divider(color: _kBorder),
         ),
         ListTile(
@@ -833,7 +835,7 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
     return Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: _kCardBg,
         border: Border(bottom: BorderSide(color: _kBorder)),
       ),
@@ -1013,13 +1015,13 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
     }
 
     // Jornadas activas y cerradas
-    bool _esCerrada(Map<String, dynamic> j) {
+    bool esCerrada(Map<String, dynamic> j) {
       final c = j['jornada_cerrada'];
       return c == true || c == 1 || c?.toString() == '1';
     }
 
-    final activas = _jornadas.where((j) => !_esCerrada(j)).toList();
-    final cerradas = _jornadas.where((j) => _esCerrada(j)).toList();
+    final activas = _jornadas.where((j) => !esCerrada(j)).toList();
+    final cerradas = _jornadas.where((j) => esCerrada(j)).toList();
 
     final hayDatos = _jornadas.isNotEmpty || _reporte.isNotEmpty;
 
@@ -1496,7 +1498,7 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
           ),
         ],
         const SizedBox(width: 10),
-        Expanded(
+        const Expanded(
           child: Divider(
             thickness: 1,
             color: _kBorder,
@@ -1613,7 +1615,7 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
                   ),
                   const SizedBox(height: 2),
                   Row(children: [
-                    Icon(Icons.schedule_rounded, size: 11, color: _kTextMuted),
+                    const Icon(Icons.schedule_rounded, size: 11, color: _kTextMuted),
                     const SizedBox(width: 4),
                     Text(
                       finStr != null
@@ -1629,7 +1631,7 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
                       Container(
                           width: 4,
                           height: 4,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                               shape: BoxShape.circle, color: _kTextMuted)),
                       const SizedBox(width: 6),
                       Text(
@@ -1774,7 +1776,7 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
 
         // ── Lista de registros ──────────────────────────────────────────
         if (registros.isNotEmpty) ...[
-          Divider(height: 1, color: _kBorder),
+          const Divider(height: 1, color: _kBorder),
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 8, 14, 4),
             child: Text(
@@ -1792,7 +1794,7 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
               ),
           const SizedBox(height: 4),
         ] else if (abierta) ...[
-          Divider(height: 1, color: _kBorder),
+          const Divider(height: 1, color: _kBorder),
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
             child: Container(
@@ -1803,9 +1805,9 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
                 border:
                     Border.all(color: _kStatusPending.withValues(alpha: 0.2)),
               ),
-              child: Row(children: [
+              child: const Row(children: [
                 Icon(Icons.sync_rounded, size: 14, color: _kStatusPending),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1818,7 +1820,7 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
                           color: _kStatusPending,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2),
                       Text(
                         'El operador tiene jornada activa. Los registros aparecerán aquí cuando el dispositivo sincronice.',
                         style: TextStyle(
@@ -2013,7 +2015,7 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
                       Container(
                         width: 38,
                         height: 38,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: _kBorder,
                           shape: BoxShape.circle,
                         ),
@@ -2056,7 +2058,7 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
           Container(
             width: 64,
             height: 64,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: _kBorder,
               shape: BoxShape.circle,
             ),
@@ -2103,24 +2105,29 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
       _filtrosHeader(mostrarEstado: true),
       Expanded(child: BlocBuilder<SupervisorBloc, SupervisorState>(
         builder: (ctx, state) {
-          if (state is SupervisorLoading)
+          if (state is SupervisorLoading) {
             return const Center(
                 child: CircularProgressIndicator(color: _kLime));
-          if (state is SupervisorError)
+          }
+          if (state is SupervisorError) {
             return _errorState(state.mensaje, _cargarRegistros);
+          }
 
           final all = _extractRegistros(state);
           final filtered = all.where((r) {
             if (r.estado == 'borrador') return false;
-            if (_estadoFiltro == 'completado' && r.estado != 'completado')
+            if (_estadoFiltro == 'completado' && r.estado != 'completado') {
               return false;
-            if (_tipoFiltro != 'todos' && r.tipoRegistro != _tipoFiltro)
+            }
+            if (_tipoFiltro != 'todos' && r.tipoRegistro != _tipoFiltro) {
               return false;
+            }
             return true;
           }).toList();
 
-          if (filtered.isEmpty)
+          if (filtered.isEmpty) {
             return _emptyRegistros('Sin registros pendientes de aprobación');
+          }
 
           return RefreshIndicator(
             onRefresh: () async => _cargarRegistros(),
@@ -2148,9 +2155,10 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
       _filtrosHeader(mostrarEstado: false),
       Expanded(child: BlocBuilder<SupervisorBloc, SupervisorState>(
         builder: (ctx, state) {
-          if (state is SupervisorLoading)
+          if (state is SupervisorLoading) {
             return const Center(
                 child: CircularProgressIndicator(color: _kLime));
+          }
 
           final all = _extractRegistros(state);
           final filtered = all.where((r) {
@@ -2158,8 +2166,9 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
             return _tipoFiltro == 'todos' || r.tipoRegistro == _tipoFiltro;
           }).toList();
 
-          if (filtered.isEmpty)
+          if (filtered.isEmpty) {
             return _emptyRegistros('Sin registros para esta fecha');
+          }
 
           final visible = filtered.take(_historialPagina * _kPageSize).toList();
           final hayMas = visible.length < filtered.length;
@@ -2520,16 +2529,28 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
       sh1.setColumnWidth(10, 13);  // Tractor
       sh1.setColumnWidth(11, 18);  // Implemento
       sh1.setColumnWidth(12, 16);  // Caja Cambios
-      for (int c = 13; c <= 18; c++) sh1.setColumnWidth(c, 11); // Horóm.
-      for (int c = 19; c <= 23; c++) sh1.setColumnWidth(c, 11); // Tiempos
+      for (int c = 13; c <= 18; c++) {
+        sh1.setColumnWidth(c, 11); // Horóm.
+      }
+      for (int c = 19; c <= 23; c++) {
+        sh1.setColumnWidth(c, 11); // Tiempos
+      }
       sh1.setColumnWidth(24, 18);  // Lotes códigos
       sh1.setColumnWidth(25, 30);  // Sectores nombres
       sh1.setColumnWidth(26, 10);  // Total Bines
-      for (int c = 27; c <= 32; c++) sh1.setColumnWidth(c, 14); // Bines
-      for (int c = 33; c <= 44; c++) sh1.setColumnWidth(c, 18); // Paros
+      for (int c = 27; c <= 32; c++) {
+        sh1.setColumnWidth(c, 14); // Bines
+      }
+      for (int c = 33; c <= 44; c++) {
+        sh1.setColumnWidth(c, 18); // Paros
+      }
       sh1.setColumnWidth(45, 13);  // Total Min
-      for (int c = 46; c <= 60; c++) sh1.setColumnWidth(c, 14); // Veh.
-      for (int c = 61; c <= 66; c++) sh1.setColumnWidth(c, 18); // PVeh
+      for (int c = 46; c <= 60; c++) {
+        sh1.setColumnWidth(c, 14); // Veh.
+      }
+      for (int c = 61; c <= 66; c++) {
+        sh1.setColumnWidth(c, 18); // PVeh
+      }
       sh1.setColumnWidth(67, 30);  // Observaciones
 
       // Altura de filas de encabezado
@@ -2731,7 +2752,7 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
   Widget _filtrosHeader({required bool mostrarEstado}) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: _kCardBg,
         border: Border(bottom: BorderSide(color: _kBorder)),
       ),
@@ -3147,10 +3168,10 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
           ),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
+            const Row(children: [
               Icon(Icons.agriculture_rounded, size: 13, color: _kStatusActive),
-              const SizedBox(width: 6),
-              const Text(
+              SizedBox(width: 6),
+              Text(
                 'Datos del tractor',
                 style: TextStyle(
                   fontSize: 11,
@@ -3267,10 +3288,10 @@ class _HomeSupervisorPageState extends State<HomeSupervisorPage>
           ),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              const Icon(Icons.directions_car_rounded, size: 13, color: kBlue),
-              const SizedBox(width: 6),
-              const Text(
+            const Row(children: [
+              Icon(Icons.directions_car_rounded, size: 13, color: kBlue),
+              SizedBox(width: 6),
+              Text(
                 'Datos del camión',
                 style: TextStyle(
                   fontSize: 11,

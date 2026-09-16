@@ -36,24 +36,29 @@ _ErrorTipo _clasificarError(String? msg) {
   if (msg == null || msg.isEmpty) return _ErrorTipo.desconocido;
   final l = msg.toLowerCase();
   if (l.contains('sin conexión') || l.contains('socket') ||
-      l.contains('network') || l.contains('connection'))
+      l.contains('network') || l.contains('connection')) {
     return _ErrorTipo.red;
-  if (l.contains('timeout') || l.contains('time out'))
+  }
+  if (l.contains('timeout') || l.contains('time out')) {
     return _ErrorTipo.timeout;
+  }
   if (l.contains('sp_') || l.contains('rechazó') ||
       l.contains('sin mensaje del sp') || l.contains('no retornó') ||
       l.contains('success') || l.contains('stored procedure') ||
-      l.contains('procedimiento'))
+      l.contains('procedimiento')) {
     return _ErrorTipo.sp;
+  }
   if (l.contains('constraint') || l.contains('unique') ||
       l.contains('foreign key') || l.contains('tabla') ||
       l.contains('column') || l.contains('schema') ||
-      l.contains('sqlite') || l.contains('drift'))
+      l.contains('sqlite') || l.contains('drift')) {
     return _ErrorTipo.bd;
+  }
   if (l.contains('http') || l.contains('401') || l.contains('403') ||
       l.contains('404') || l.contains('500') || l.contains('servidor') ||
-      l.contains('api'))
+      l.contains('api')) {
     return _ErrorTipo.erp;
+  }
   return _ErrorTipo.desconocido;
 }
 
@@ -92,15 +97,17 @@ IconData _errorTipoIcon(_ErrorTipo t) {
 
 String _spName(String endpoint) {
   if (endpoint == '/registros' || endpoint == 'POST /registros/vehiculo' ||
-      endpoint == '/registros/vehiculo' || endpoint == 'PUT /registros/vehiculo')
+      endpoint == '/registros/vehiculo' || endpoint == 'PUT /registros/vehiculo') {
     return 'SP_MMA_SINCRONIZAR_OFFLINE';
+  }
   if (endpoint.contains('/checklist')) return 'SP_MMA_GUARDAR_CHECKLIST';
   if (endpoint.contains('/bines'))     return 'SP_MMA_REGISTRAR_BIN';
   if (endpoint.contains('/paros'))     return 'SP_MMA_REGISTRAR_PARO';
   if (endpoint.contains('/cerrar'))    return 'SP_MMA_CERRAR_TURNO';
   if (endpoint.contains('/aprobar'))   return 'SP_MMA_APROBAR_REGISTRO';
-  if (endpoint.contains('portero') || endpoint.contains('lectura'))
+  if (endpoint.contains('portero') || endpoint.contains('lectura')) {
     return 'SP_MMA_REGISTRAR_LECTURA_PORTERO';
+  }
   if (endpoint.contains('jornada'))    return 'SP_MMA_ACTUALIZAR_STATUS_JORNADA';
   return endpoint;
 }
@@ -143,36 +150,41 @@ class _SyncDetailSheetState extends State<_SyncDetailSheet> {
 
   String _operacionLabel(String endpoint, String method) {
     if (method == 'POST' && endpoint == '/registros') return 'Crear registro';
-    if (method == 'POST' && endpoint == '/registros/vehiculo')
+    if (method == 'POST' && endpoint == '/registros/vehiculo') {
       return 'Crear registro vehículo';
+    }
     if (endpoint.contains('/checklist')) return 'Guardar checklist';
     if (endpoint.contains('/bines')) return 'Registrar bines';
     if (endpoint.contains('/paros')) return 'Registrar paro';
     if (endpoint.contains('/cerrar')) return 'Cerrar jornada';
     if (endpoint.contains('/aprobar')) return 'Aprobar / rechazar';
     if (endpoint.contains('jornada')) return 'Estado jornada';
-    if (endpoint.contains('portero') || endpoint.contains('lectura'))
+    if (endpoint.contains('portero') || endpoint.contains('lectura')) {
       return 'Lectura portería';
+    }
     return endpoint;
   }
 
   IconData _operacionIcon(String endpoint) {
-    if (endpoint == '/registros' || endpoint == '/registros/vehiculo')
+    if (endpoint == '/registros' || endpoint == '/registros/vehiculo') {
       return Icons.add_circle_outline_rounded;
+    }
     if (endpoint.contains('/checklist')) return Icons.checklist_rounded;
     if (endpoint.contains('/bines')) return Icons.inventory_2_outlined;
     if (endpoint.contains('/paros')) return Icons.pause_circle_outline_rounded;
     if (endpoint.contains('/cerrar')) return Icons.check_circle_outline_rounded;
     if (endpoint.contains('/aprobar')) return Icons.verified_outlined;
     if (endpoint.contains('jornada')) return Icons.access_time_rounded;
-    if (endpoint.contains('portero') || endpoint.contains('lectura'))
+    if (endpoint.contains('portero') || endpoint.contains('lectura')) {
       return Icons.qr_code_scanner_rounded;
+    }
     return Icons.sync_rounded;
   }
 
   Color _operacionColor(String endpoint) {
-    if (endpoint == '/registros' || endpoint == '/registros/vehiculo')
+    if (endpoint == '/registros' || endpoint == '/registros/vehiculo') {
       return _kGreen;
+    }
     if (endpoint.contains('/checklist')) return const Color(0xFF00695C);
     if (endpoint.contains('/bines')) return const Color(0xFF2E7D32);
     if (endpoint.contains('/paros')) return const Color(0xFFEF6C00);

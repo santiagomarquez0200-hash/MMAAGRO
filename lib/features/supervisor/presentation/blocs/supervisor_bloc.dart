@@ -76,7 +76,7 @@ class SupervisorBloc extends Bloc<SupervisorEvent, SupervisorState> {
       },
     );
     } on TimeoutException {
-      emit(SupervisorError(mensaje: 'Tiempo de espera agotado. Intente de nuevo.'));
+      emit(const SupervisorError(mensaje: 'Tiempo de espera agotado. Intente de nuevo.'));
     }
   }
 }

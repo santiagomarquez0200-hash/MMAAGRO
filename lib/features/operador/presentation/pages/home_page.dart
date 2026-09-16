@@ -832,8 +832,8 @@ class _HomePageState extends State<HomePage>
       _alerta80Mostrada = true;
       if (mounted && hasPending) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
+          const SnackBar(
+            content: Row(
               children: [
                 Icon(Icons.access_time_rounded, color: Colors.white, size: 18),
                 SizedBox(width: 10),
@@ -844,9 +844,9 @@ class _HomePageState extends State<HomePage>
                 ),
               ],
             ),
-            backgroundColor: const Color(0xFFEF6C00),
+            backgroundColor: Color(0xFFEF6C00),
             behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 8),
+            duration: Duration(seconds: 8),
           ),
         );
       }
@@ -1162,13 +1162,13 @@ class _HomePageState extends State<HomePage>
       opacity: _animationController,
       child: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [Color(0xFF0D241C), Color(0xFF1B4332)],
           ),
-          borderRadius: const BorderRadius.only(
+          borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(32),
             bottomRight: Radius.circular(32),
           ),

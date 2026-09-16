@@ -62,7 +62,7 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
-  AppDatabase.forTesting(QueryExecutor executor) : super(executor);
+  AppDatabase.forTesting(super.executor);
 
   @override
   int get schemaVersion => 21;
@@ -339,11 +339,23 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 19) {
             // v18→v19: tabla GPS de trazabilidad de maquinaria.
-            // Nombre físico definido por el cliente: CLI547_AGM_Punto_gps_maquinaria.
+            final oldGpsTable = await customSelect(
+              "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'CLI547_AGM_Punto_gps_maquinaria'",
+            ).get();
+            final newGpsTable = await customSelect(
+              "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'CLI547_AGM_Ruta_maquinaria'",
+            ).get();
+            if (oldGpsTable.isNotEmpty && newGpsTable.isEmpty) {
+              await customStatement(
+                'ALTER TABLE "CLI547_AGM_Punto_gps_maquinaria" '
+                'RENAME TO "CLI547_AGM_Ruta_maquinaria"',
+              );
+            }
+            // Nombre físico definido por el cliente: CLI547_AGM_Ruta_maquinaria.
             // Almacena puntos GPS capturados durante la jornada para reconstruir
             // la ruta del tractor/vehículo e incluirla en el payload de sync.
             await customStatement('''
-              CREATE TABLE IF NOT EXISTS "CLI547_AGM_Punto_gps_maquinaria" (
+              CREATE TABLE IF NOT EXISTS "CLI547_AGM_Ruta_maquinaria" (
                 id          TEXT NOT NULL,
                 registro_id TEXT NOT NULL,
                 latitud     REAL NOT NULL,
@@ -353,12 +365,16 @@ class AppDatabase extends _$AppDatabase {
                 velocidad   INTEGER,
                 secuencia   INTEGER NOT NULL DEFAULT 0,
                 captured_at INTEGER NOT NULL,
+                rumbo       REAL,
+                velocidad_kmh REAL,
+                tipo_movimiento TEXT,
+                sublote_id  INTEGER,
                 PRIMARY KEY (id)
               )
             ''');
             await customStatement(
               'CREATE INDEX IF NOT EXISTS idx_gps_registro '
-              'ON "CLI547_AGM_Punto_gps_maquinaria"(registro_id)',
+              'ON "CLI547_AGM_Ruta_maquinaria"(registro_id)',
             );
           }
           if (from < 20) {
@@ -367,11 +383,11 @@ class AppDatabase extends _$AppDatabase {
             // 1 = ya enviado y confirmado por el servidor.
             // GpsSyncService lee WHERE enviado = 0 y marca 1 tras el envío exitoso.
             await _tryAlter(
-              '"CLI547_AGM_Punto_gps_maquinaria" ADD COLUMN enviado INTEGER NOT NULL DEFAULT 0',
+              '"CLI547_AGM_Ruta_maquinaria" ADD COLUMN enviado INTEGER NOT NULL DEFAULT 0',
             );
             await customStatement(
               'CREATE INDEX IF NOT EXISTS idx_gps_enviado '
-              'ON "CLI547_AGM_Punto_gps_maquinaria"(enviado)',
+              'ON "CLI547_AGM_Ruta_maquinaria"(enviado)',
             );
           }
           if (from < 21) {
@@ -384,15 +400,15 @@ class AppDatabase extends _$AppDatabase {
             await _tryAlter('lotes_local ADD COLUMN longitud_centro REAL');
             await _tryAlter('lotes_local ADD COLUMN nombre_cultivo TEXT');
             await _tryAlter('lotes_local ADD COLUMN color_cultivo TEXT');
-            // CLI547_AGM_Punto_gps_maquinaria: 4 columnas para analytics
+            // CLI547_AGM_Ruta_maquinaria: 4 columnas para analytics
             // rumbo: dirección en grados (0–360)
             // velocidad_kmh: velocidad en km/h (speed m/s * 3.6)
             // tipo_movimiento: 'TRABAJO' | 'TRASLADO' | 'PARADO'
             // sublote_id: ID ERP del sublote donde se capturó el punto (null = fuera)
-            await _tryAlter('"CLI547_AGM_Punto_gps_maquinaria" ADD COLUMN rumbo REAL');
-            await _tryAlter('"CLI547_AGM_Punto_gps_maquinaria" ADD COLUMN velocidad_kmh REAL');
-            await _tryAlter('"CLI547_AGM_Punto_gps_maquinaria" ADD COLUMN tipo_movimiento TEXT');
-            await _tryAlter('"CLI547_AGM_Punto_gps_maquinaria" ADD COLUMN sublote_id INTEGER');
+            await _tryAlter('"CLI547_AGM_Ruta_maquinaria" ADD COLUMN rumbo REAL');
+            await _tryAlter('"CLI547_AGM_Ruta_maquinaria" ADD COLUMN velocidad_kmh REAL');
+            await _tryAlter('"CLI547_AGM_Ruta_maquinaria" ADD COLUMN tipo_movimiento TEXT');
+            await _tryAlter('"CLI547_AGM_Ruta_maquinaria" ADD COLUMN sublote_id INTEGER');
           }
         },
         beforeOpen: (details) async {
@@ -402,6 +418,18 @@ class AppDatabase extends _$AppDatabase {
           await customStatement(
             "UPDATE outbox_entries SET status = 'failed', retry_count = 0 WHERE status = 'syncing'",
           );
+          final oldGpsTable = await customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'CLI547_AGM_Punto_gps_maquinaria'",
+          ).get();
+          final newGpsTable = await customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'CLI547_AGM_Ruta_maquinaria'",
+          ).get();
+          if (oldGpsTable.isNotEmpty && newGpsTable.isEmpty) {
+            await customStatement(
+              'ALTER TABLE "CLI547_AGM_Punto_gps_maquinaria" '
+              'RENAME TO "CLI547_AGM_Ruta_maquinaria"',
+            );
+          }
           // Índices de rendimiento — idempotentes, se aplican en toda apertura.
           // Cubren tanto instalaciones frescas como upgrades existentes.
           await customStatement('CREATE INDEX IF NOT EXISTS idx_reg_operador  ON registros_diarios_local(operador_id_erp)');
@@ -419,6 +447,11 @@ class AppDatabase extends _$AppDatabase {
           // v13→v15: columnas de falla mecánica en paros
           await _tryAlter('paros_equipos_local ADD COLUMN falla_mecanica_id INTEGER');
           await _tryAlter('paros_equipos_local ADD COLUMN falla_mecanica_nombre TEXT');
+          await _tryAlter('"CLI547_AGM_Ruta_maquinaria" ADD COLUMN enviado INTEGER NOT NULL DEFAULT 0');
+          await _tryAlter('"CLI547_AGM_Ruta_maquinaria" ADD COLUMN rumbo REAL');
+          await _tryAlter('"CLI547_AGM_Ruta_maquinaria" ADD COLUMN velocidad_kmh REAL');
+          await _tryAlter('"CLI547_AGM_Ruta_maquinaria" ADD COLUMN tipo_movimiento TEXT');
+          await _tryAlter('"CLI547_AGM_Ruta_maquinaria" ADD COLUMN sublote_id INTEGER');
           // v15→v16: identificación del implemento en último horómetro
           await _tryAlter('ultimo_horometro_tractores_local ADD COLUMN implemento_id_erp INTEGER');
           await _tryAlter('ultimo_horometro_tractores_local ADD COLUMN codigo_implemento TEXT');
@@ -536,7 +569,7 @@ class AppDatabase extends _$AppDatabase {
           // GPS trazabilidad — tabla con nombre definido por el cliente (v19/v20)
           // enviado: 0=pendiente de enviar al SP GPS, 1=confirmado en SQL Server
           await customStatement('''
-            CREATE TABLE IF NOT EXISTS "CLI547_AGM_Punto_gps_maquinaria" (
+            CREATE TABLE IF NOT EXISTS "CLI547_AGM_Ruta_maquinaria" (
               id          TEXT    NOT NULL,
               registro_id TEXT    NOT NULL,
               latitud     REAL    NOT NULL,
@@ -547,20 +580,24 @@ class AppDatabase extends _$AppDatabase {
               secuencia   INTEGER NOT NULL DEFAULT 0,
               captured_at INTEGER NOT NULL,
               enviado     INTEGER NOT NULL DEFAULT 0,
+              rumbo       REAL,
+              velocidad_kmh REAL,
+              tipo_movimiento TEXT,
+              sublote_id  INTEGER,
               PRIMARY KEY (id)
             )
           ''');
           await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_gps_registro '
-            'ON "CLI547_AGM_Punto_gps_maquinaria"(registro_id)',
+            'ON "CLI547_AGM_Ruta_maquinaria"(registro_id)',
           );
           // Idempotente: agrega columna si no existe (upgrades v19 → v20)
           await _tryAlter(
-            '"CLI547_AGM_Punto_gps_maquinaria" ADD COLUMN enviado INTEGER NOT NULL DEFAULT 0',
+            '"CLI547_AGM_Ruta_maquinaria" ADD COLUMN enviado INTEGER NOT NULL DEFAULT 0',
           );
           await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_gps_enviado '
-            'ON "CLI547_AGM_Punto_gps_maquinaria"(enviado)',
+            'ON "CLI547_AGM_Ruta_maquinaria"(enviado)',
           );
         },
       );

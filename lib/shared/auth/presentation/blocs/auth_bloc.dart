@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agro_aplicaciones/shared/auth/domain/usecases/login_usecase.dart';
 import 'package:agro_aplicaciones/shared/auth/domain/repositories/auth_repository.dart';
-import 'package:agro_aplicaciones/shared/auth/domain/entities/usuario.dart';
 import 'package:agro_aplicaciones/core/errors/failures.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';

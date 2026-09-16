@@ -17,6 +17,7 @@ import 'package:agro_aplicaciones/features/operador/presentation/blocs/registro_
 import 'package:agro_aplicaciones/shared/sync/presentation/blocs/sync_bloc.dart';
 import 'package:agro_aplicaciones/shared/sync/presentation/blocs/sync_event.dart';
 import 'package:agro_aplicaciones/shared/widgets/connectivity_dot.dart';
+import 'package:agro_aplicaciones/shared/widgets/spinner_time_picker.dart';
 
 /// Clase auxiliar para manejar la selección de lotes con su área trabajada
 class LoteSeleccionado {
@@ -141,9 +142,10 @@ class _CerrarTurnoPageState extends State<CerrarTurnoPage> {
                 registro.tiempoTurno!.horaLlegadaTaller!;
           }
           if (registro.tiempoTurno?.horaRefrigerio != null) {
-            final parts = registro.tiempoTurno!.horaRefrigerio!.split(' - ');
-            _horaRefrigerioInicioCtrl.text = parts.isNotEmpty ? parts[0] : '';
-            _horaRefrigerioFinCtrl.text = parts.length > 1 ? parts[1] : '';
+            final parsed = _parseHoraRefrigerio(
+                registro.tiempoTurno!.horaRefrigerio);
+            _horaRefrigerioInicioCtrl.text = parsed.inicio ?? '';
+            _horaRefrigerioFinCtrl.text = parsed.fin ?? '';
           }
           // Pre-llenar observaciones
           if (registro.observacionesMaq != null) {
@@ -305,9 +307,7 @@ class _CerrarTurnoPageState extends State<CerrarTurnoPage> {
     // Refrigerio: ambos presentes o ninguno.
     final refInicio = _horaRefrigerioInicioCtrl.text.trim();
     final refFin = _horaRefrigerioFinCtrl.text.trim();
-    final refStr = (refInicio.isNotEmpty || refFin.isNotEmpty)
-        ? '$refInicio - $refFin'
-        : null;
+    final refStr = _buildHoraRefrigerio(refInicio, refFin);
 
     final result =
         await sl<RegistroRepository>().cerrarTurno(CerrarTurnoParams(
@@ -386,7 +386,10 @@ class _CerrarTurnoPageState extends State<CerrarTurnoPage> {
             minute: int.tryParse(partes[1]) ?? TimeOfDay.now().minute,
           )
         : TimeOfDay.now();
-    final picked = await showTimePicker(context: context, initialTime: initial);
+    final picked = await showSpinnerTimePicker(
+      context: context,
+      initialTime: initial,
+    );
     if (picked != null && mounted) {
       setState(() {
         ctrl.text =
@@ -420,6 +423,38 @@ class _CerrarTurnoPageState extends State<CerrarTurnoPage> {
         _firmaBase64 = base64Encode(png);
       });
     }
+  }
+
+  static String? _buildHoraRefrigerio(String? inicio, String? fin) {
+    final inicioTrim = inicio?.trim() ?? '';
+    final finTrim = fin?.trim() ?? '';
+
+    if (inicioTrim.isEmpty && finTrim.isEmpty) return null;
+    if (inicioTrim.isEmpty || finTrim.isEmpty) return null;
+
+    return '$inicioTrim - $finTrim';
+  }
+
+  static ({String? inicio, String? fin}) _parseHoraRefrigerio(String? raw) {
+    if (raw == null) return (inicio: null, fin: null);
+
+    final cleaned = raw.trim();
+    if (cleaned.isEmpty || cleaned == '-') {
+      return (inicio: null, fin: null);
+    }
+
+    final compact = cleaned.replaceAll(RegExp(r'\s+'), '');
+    final parts = compact.split('-');
+    if (parts.length == 2) {
+      final inicio = parts[0].trim();
+      final fin = parts[1].trim();
+      return (
+        inicio: inicio.isEmpty ? null : inicio,
+        fin: fin.isEmpty ? null : fin,
+      );
+    }
+
+    return (inicio: null, fin: null);
   }
 
   /// Valida y dispara el evento de cierre en el BLoC para persistencia local
@@ -482,10 +517,10 @@ class _CerrarTurnoPageState extends State<CerrarTurnoPage> {
             horaLlegadaTaller: _horaLlegadaTallerCtrl.text.isNotEmpty
                 ? _horaLlegadaTallerCtrl.text
                 : null,
-            horaRefrigerio: (_horaRefrigerioInicioCtrl.text.isNotEmpty ||
-                    _horaRefrigerioFinCtrl.text.isNotEmpty)
-                ? '${_horaRefrigerioInicioCtrl.text} - ${_horaRefrigerioFinCtrl.text}'
-                : null,
+            horaRefrigerio: _buildHoraRefrigerio(
+              _horaRefrigerioInicioCtrl.text,
+              _horaRefrigerioFinCtrl.text,
+            ),
             observacionesMaq: _observacionesCtrl.text.isNotEmpty
                 ? _observacionesCtrl.text
                 : null,
@@ -1190,7 +1225,7 @@ class _LotesPickerPageState extends State<LotesPickerPage> {
           const Spacer(),
           Text(
             '${h.count} lote${h.count != 1 ? 's' : ''}',
-            style: TextStyle(color: h.meta.color.withOpacity(0.8), fontSize: 12),
+            style: TextStyle(color: h.meta.color.withValues(alpha: 0.8), fontSize: 12),
           ),
         ],
       ),
@@ -1205,7 +1240,7 @@ class _LotesPickerPageState extends State<LotesPickerPage> {
       margin: const EdgeInsets.fromLTRB(12, 10, 12, 2),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: meta.color.withOpacity(0.07),
+        color: meta.color.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(8),
         border: Border(left: BorderSide(color: meta.color, width: 3)),
       ),
@@ -1230,7 +1265,7 @@ class _LotesPickerPageState extends State<LotesPickerPage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(
-              color: meta.color.withOpacity(0.12),
+              color: meta.color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
@@ -1264,7 +1299,7 @@ class _LotesPickerPageState extends State<LotesPickerPage> {
           borderRadius: BorderRadius.circular(10),
           side: isSelected
               ? BorderSide(color: meta.color, width: 2)
-              : BorderSide(color: meta.color.withOpacity(0.2)),
+              : BorderSide(color: meta.color.withValues(alpha: 0.2)),
         ),
         child: CheckboxListTile(
           title: isNested
@@ -1275,7 +1310,7 @@ class _LotesPickerPageState extends State<LotesPickerPage> {
                     Icon(
                       Icons.subdirectory_arrow_right_rounded,
                       size: 14,
-                      color: meta.color.withOpacity(0.65),
+                      color: meta.color.withValues(alpha: 0.65),
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -1312,7 +1347,7 @@ class _LotesPickerPageState extends State<LotesPickerPage> {
                       subloteLabel,
                       style: TextStyle(
                         fontSize: 12,
-                        color: meta.color.withOpacity(0.75),
+                        color: meta.color.withValues(alpha: 0.75),
                       ),
                     ),
                   ],

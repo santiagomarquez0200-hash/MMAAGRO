@@ -152,7 +152,7 @@ class ErpApiClient {
       final value = parametrosValidados[i];
       final paramDef = contract.inputParams[i];
       final paramName = paramDef.cleanName;
-      final valorStr = value == null ? null : value.toString();
+      final valorStr = value?.toString();
 
       parametrosCompletos.add({
         'Nombre': paramName,

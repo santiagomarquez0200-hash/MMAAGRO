@@ -257,7 +257,7 @@ class _CompletarFallaPageState extends State<CompletarFallaPage>
                                       : null,
                             ),
                             const SizedBox(height: 16),
-                            _SectionLabel(
+                            const _SectionLabel(
                               icon: Icons.flag_rounded,
                               label: 'Estado final',
                             ),
@@ -377,7 +377,7 @@ class _ParoResumen extends StatelessWidget {
             decoration: BoxDecoration(
               color: colorEstado.withValues(alpha: 0.06),
               border: Border(
-                bottom: BorderSide(color: _kBorder),
+                bottom: const BorderSide(color: _kBorder),
                 left: BorderSide(color: colorEstado, width: 3),
               ),
             ),
@@ -604,13 +604,13 @@ class _HorasRow extends StatelessWidget {
             onTap: onPickInicio,
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12),
           child: Column(
             children: [
-              const Icon(Icons.arrow_forward_rounded,
+              Icon(Icons.arrow_forward_rounded,
                   color: _kTextMuted, size: 18),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text('a',
                   style: TextStyle(
                       color: _kTextMuted,

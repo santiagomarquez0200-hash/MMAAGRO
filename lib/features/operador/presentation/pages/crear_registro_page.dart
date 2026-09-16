@@ -26,6 +26,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:agro_aplicaciones/shared/widgets/offline_banner.dart';
 import 'package:agro_aplicaciones/shared/widgets/scanner_dialog.dart';
 import 'package:agro_aplicaciones/shared/widgets/connectivity_dot.dart';
+import 'package:agro_aplicaciones/shared/widgets/spinner_time_picker.dart';
 
 class CrearRegistroPage extends StatefulWidget {
   final String? registroId;
@@ -1575,7 +1576,7 @@ class _CrearRegistroPageState extends State<CrearRegistroPage> {
                 )
               : TimeOfDay.now();
           final picked =
-              await showTimePicker(context: context, initialTime: initial);
+              await showSpinnerTimePicker(context: context, initialTime: initial);
           if (picked != null && mounted) {
             setState(() {
               controller.text =

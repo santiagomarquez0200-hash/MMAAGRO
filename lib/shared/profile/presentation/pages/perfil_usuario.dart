@@ -84,11 +84,11 @@ class _PerfilUsuarioPageState extends State<PerfilUsuarioPage> {
         backgroundColor: const Color(0xFF0D241C),
         elevation: 0,
         automaticallyImplyLeading: false, // Sin hamburguesa
-        title: Row(
+        title: const Row(
           children: [
-            const Icon(Icons.eco, color: Color(0xFF8CC53F), size: 24),
-            const SizedBox(width: 8),
-            const Text(
+            Icon(Icons.eco, color: Color(0xFF8CC53F), size: 24),
+            SizedBox(width: 8),
+            Text(
               'Perfil',
               style: TextStyle(
                   color: Colors.white,

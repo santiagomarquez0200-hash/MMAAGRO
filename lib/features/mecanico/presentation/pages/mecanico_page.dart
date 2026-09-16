@@ -595,7 +595,7 @@ class _ParoCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: _statusColor.withValues(alpha: 0.06),
               border: Border(
-                  bottom: BorderSide(color: _kBorder),
+                  bottom: const BorderSide(color: _kBorder),
                   left: BorderSide(color: _statusColor, width: 3)),
             ),
             child: Row(

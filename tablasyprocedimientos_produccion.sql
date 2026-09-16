@@ -1362,6 +1362,20 @@ GO
     END
     GO
 
+    -- Categorías adicionales de inspección por prefijo de implemento.
+    IF NOT EXISTS (SELECT 1 FROM dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar azufradora')
+        INSERT INTO dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar azufradora', 30);
+    IF NOT EXISTS (SELECT 1 FROM dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar electroestática agrícola')
+        INSERT INTO dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar electroestática agrícola', 40);
+    IF NOT EXISTS (SELECT 1 FROM dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar picadora agrícola')
+        INSERT INTO dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar picadora agrícola', 50);
+    IF NOT EXISTS (SELECT 1 FROM dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar carreta viñatera')
+        INSERT INTO dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar carreta viñatera', 60);
+    IF NOT EXISTS (SELECT 1 FROM dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar carreta hidráulica')
+        INSERT INTO dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar carreta hidráulica', 70);
+    IF NOT EXISTS (SELECT 1 FROM dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar rotocultor')
+        INSERT INTO dbo.CLI547_AGM_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar rotocultor', 80);
+
     -- Items checklist tractor (32): 2 categorías × 16 items
     IF NOT EXISTS (SELECT 1 FROM dbo.CLI547_AGM_MMA_CHECKLIST_ITEMS_CATALOGO WHERE tipo_registro = 'tractor')
     BEGIN

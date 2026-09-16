@@ -137,10 +137,28 @@ IF NOT EXISTS (SELECT 1 FROM AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS WHERE nombre
 IF NOT EXISTS (SELECT 1 FROM AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar Implemento')
     INSERT INTO AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar Implemento', 20);
 
+IF NOT EXISTS (SELECT 1 FROM AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar azufradora')
+    INSERT INTO AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar azufradora', 30);
+
+IF NOT EXISTS (SELECT 1 FROM AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar electroestática agrícola')
+    INSERT INTO AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar electroestática agrícola', 40);
+
+IF NOT EXISTS (SELECT 1 FROM AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar picadora agrícola')
+    INSERT INTO AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar picadora agrícola', 50);
+
+IF NOT EXISTS (SELECT 1 FROM AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar carreta viñatera')
+    INSERT INTO AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar carreta viñatera', 60);
+
+IF NOT EXISTS (SELECT 1 FROM AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar carreta hidráulica')
+    INSERT INTO AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar carreta hidráulica', 70);
+
+IF NOT EXISTS (SELECT 1 FROM AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Inspeccionar rotocultor')
+    INSERT INTO AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Inspeccionar rotocultor', 80);
+
 IF NOT EXISTS (SELECT 1 FROM AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS WHERE nombre = 'Vehículo')
     INSERT INTO AGKMMA.CLI547_MMA_CHECKLIST_CATEGORIAS (nombre, orden) VALUES ('Vehículo', 100);
 
-PRINT '    OK — 3 categorías garantizadas.';
+PRINT '    OK — categorías de checklist garantizadas.';
 GO
 
 -- ─────────────────────────────────────────────────────────────────────────────

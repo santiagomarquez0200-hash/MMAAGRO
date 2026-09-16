@@ -13,6 +13,7 @@ import 'package:agro_aplicaciones/shared/auth/presentation/blocs/auth_state.dart
 import 'package:agro_aplicaciones/shared/catalogos/presentation/blocs/catalogo_bloc.dart';
 import 'package:agro_aplicaciones/shared/catalogos/presentation/blocs/catalogo_state.dart';
 import 'package:agro_aplicaciones/shared/widgets/scanner_dialog.dart';
+import 'package:agro_aplicaciones/shared/widgets/spinner_time_picker.dart';
 import 'package:drift/drift.dart' show UpdateKind, Value, Variable;
 import 'package:agro_aplicaciones/infrastructure/database/app_database.dart';
 import 'package:agro_aplicaciones/injection_container.dart';
@@ -178,8 +179,12 @@ class _RegistroVehiculoPageState extends State<RegistroVehiculoPage> {
     _horaLlegadaTallerCtrl.dispose();
     _observacionesCtrl.dispose();
     _supervisorNombreCtrl.dispose();
-    for (var r in _combustibles) r.dispose();
-    for (var r in _paros) r.dispose();
+    for (var r in _combustibles) {
+      r.dispose();
+    }
+    for (var r in _paros) {
+      r.dispose();
+    }
     super.dispose();
   }
 
@@ -223,8 +228,17 @@ class _RegistroVehiculoPageState extends State<RegistroVehiculoPage> {
   }
 
   Future<void> _pickTime(TextEditingController ctrl) async {
-    final t =
-        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final partes = ctrl.text.split(':');
+    final initial = partes.length == 2
+        ? TimeOfDay(
+            hour: int.tryParse(partes[0]) ?? TimeOfDay.now().hour,
+            minute: int.tryParse(partes[1]) ?? TimeOfDay.now().minute,
+          )
+        : TimeOfDay.now();
+    final t = await showSpinnerTimePicker(
+      context: context,
+      initialTime: initial,
+    );
     if (t != null) {
       setState(() => ctrl.text =
           '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}');
@@ -249,6 +263,10 @@ class _RegistroVehiculoPageState extends State<RegistroVehiculoPage> {
       final deviceId = await sl<DeviceService>().getDeviceId();
       final registroId = const Uuid().v4();
       final numeroReg = await _generateNumeroRegistro();
+      final checklistCatalog = await db.catalogoDao.getChecklistItems();
+      final checklistById = {
+        for (final item in checklistCatalog) item.id: item,
+      };
 
       await db.transaction(() async {
         // 1. Registro Diario (Cabecera común)
@@ -343,11 +361,14 @@ class _RegistroVehiculoPageState extends State<RegistroVehiculoPage> {
 
         // 5. Checklist
         for (var entry in _checklistResultados.entries) {
+          final item = checklistById[entry.key];
           await db.into(db.checklistResultadosLocal).insert(
                 ChecklistResultadosLocalCompanion.insert(
                   id: const Uuid().v4(),
                   registroId: registroId,
                   itemId: entry.key,
+                  itemNombre: Value(item?.nombre ?? ''),
+                  categoriaNombre: Value(item?.categoriaNombre ?? ''),
                   resultado: entry.value,
                 ),
               );
@@ -552,10 +573,16 @@ class _RegistroVehiculoPageState extends State<RegistroVehiculoPage> {
 
   Widget _buildAppBar() {
     return Container(
-      color: const Color(0xFF1B4332),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1B4332),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(22),
+          bottomRight: Radius.circular(22),
+        ),
+      ),
       padding: EdgeInsets.only(
           top: MediaQuery.of(context).padding.top + 8,
-          bottom: 12,
+          bottom: 16,
           left: 8,
           right: 16),
       child: Row(
@@ -572,8 +599,8 @@ class _RegistroVehiculoPageState extends State<RegistroVehiculoPage> {
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold)),
-                Text('MMA-FR-013',
-                    style: TextStyle(color: Color(0xFF8CC53F), fontSize: 12)),
+                Text('MMA-FR-013  •  Control diario de camión',
+                  style: TextStyle(color: Color(0xFFB7D979), fontSize: 12)),
               ],
             ),
           ),
@@ -985,7 +1012,7 @@ class _RegistroVehiculoPageState extends State<RegistroVehiculoPage> {
         child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: isSel ? color.withOpacity(0.1) : Colors.white,
+          color: isSel ? color.withValues(alpha: 0.1) : Colors.white,
           border:
               Border.all(color: isSel ? color : Colors.grey.shade300, width: 2),
           borderRadius: BorderRadius.circular(12),
@@ -1145,7 +1172,7 @@ class _RegistroVehiculoPageState extends State<RegistroVehiculoPage> {
     required void Function(T?) onChanged,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       items: items
           .map((i) => DropdownMenuItem(
               value: i,
@@ -1249,29 +1276,42 @@ class _CardWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 0,
+      elevation: 1,
+      shadowColor: const Color(0x221B4332),
+      color: Colors.white,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.grey.shade200)),
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: Color(0xFFE3EAE3))),
+      margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, size: 20, color: const Color(0xFF1B4332)),
-                const SizedBox(width: 8),
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F2E8),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: 19, color: const Color(0xFF1B4332)),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                     child: Text(title,
                         style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 15,
                             color: Color(0xFF1B4332)))),
                 if (trailing != null) trailing!,
               ],
             ),
-            const Divider(height: 24, thickness: 1),
+            const SizedBox(height: 12),
+            Container(height: 1, color: const Color(0xFFE8EFE8)),
+            const SizedBox(height: 16),
             ...children,
           ],
         ),

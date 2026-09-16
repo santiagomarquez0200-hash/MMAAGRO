@@ -36,6 +36,72 @@ class _ChecklistPageState extends State<ChecklistPage>
   /// Tipo del registro ('tractor' o 'vehiculo'). Se carga desde SQLite al init.
   /// Determina qué ítems del catálogo se muestran en el checklist.
   String _tipoRegistro = 'tractor';
+  String? _implementoCodigo;
+
+  static const _categoriaImplementoPorPrefijo = <String, String>{
+    'AZU': 'Inspeccionar azufradora',
+    'ELE': 'Inspeccionar electroestática agrícola',
+    'TRI': 'Inspeccionar picadora agrícola',
+    'CVI': 'Inspeccionar carreta viñatera',
+    'CHI': 'Inspeccionar carreta hidráulica',
+    'ROT': 'Inspeccionar rotocultor',
+  };
+
+  String get _categoriaImplemento {
+    final codigo = _normalizarCodigo(_implementoCodigo);
+    for (final entry in _categoriaImplementoPorPrefijo.entries) {
+      if (codigo.startsWith(entry.key)) return entry.value;
+    }
+    return 'Inspeccionar Implemento';
+  }
+
+  String _normalizarCodigo(String? value) =>
+      (value ?? '').trim().replaceAll(RegExp(r'\s+'), '').toUpperCase();
+
+  String _tipoRegistroNormalizado(String value) =>
+      value.trim().toLowerCase();
+
+    String _normalizarCategoria(String value) => value
+      .replaceAll(RegExp('[áÁ]'), 'a')
+      .replaceAll(RegExp('[éÉ]'), 'e')
+      .replaceAll(RegExp('[íÍ]'), 'i')
+      .replaceAll(RegExp('[óÓ]'), 'o')
+      .replaceAll(RegExp('[úÚ]'), 'u')
+      .replaceAll('ñ', 'n')
+      .replaceAll('Ñ', 'N')
+      .trim()
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .toLowerCase();
+
+  String _categoriaCanonica(String value) {
+    final normalized = _normalizarCategoria(value);
+    for (final categoria in [
+      'Inspeccionar Tractor',
+      'Inspeccionar Implemento',
+      ..._categoriaImplementoPorPrefijo.values,
+    ]) {
+      if (_normalizarCategoria(categoria) == normalized) return categoria;
+    }
+    return value.trim();
+  }
+
+  List<ChecklistItem> _itemsVisibles(List<ChecklistItem> items) {
+    final tipoRegistro = _tipoRegistroNormalizado(_tipoRegistro);
+    final activos = items
+      .where((i) =>
+        i.activo && _tipoRegistroNormalizado(i.tipoRegistro) == tipoRegistro)
+        .toList();
+    if (tipoRegistro != 'tractor') return activos;
+
+    final categoriasPermitidas = {
+      _normalizarCategoria('Inspeccionar Tractor'),
+      _normalizarCategoria(_categoriaImplemento),
+    };
+    return activos
+        .where((i) => categoriasPermitidas.contains(
+            _normalizarCategoria(i.categoriaNombre)))
+        .toList();
+  }
 
   // BUG-08: stored before dispatching so the BlocListener can navigate correctly.
   bool? _pendingRequiereBines;
@@ -82,7 +148,11 @@ class _ChecklistPageState extends State<ChecklistPage>
       (_) => null,
       (r) {
         if (mounted) {
-          setState(() => _tipoRegistro = r.tipoRegistro);
+          setState(() {
+            _tipoRegistro = r.tipoRegistro;
+            _implementoCodigo = r.implementoCodigo;
+            _categoriaSeleccionada = null;
+          });
         }
       },
     );
@@ -121,9 +191,7 @@ class _ChecklistPageState extends State<ChecklistPage>
   void _autoSave() {
     final catState = context.read<CatalogoBloc>().state;
     if (catState is! CatalogoLoaded || _resultados.isEmpty) return;
-    final activos = catState.checklistItems
-        .where((i) => i.activo && i.tipoRegistro == _tipoRegistro)
-        .toList();
+    final activos = _itemsVisibles(catState.checklistItems);
     final itemsMap = {for (final i in activos) i.id: i};
     final resultados = _resultados.entries
         .map((e) => ChecklistResultadoInput(
@@ -161,9 +229,7 @@ class _ChecklistPageState extends State<ChecklistPage>
     final catState = context.read<CatalogoBloc>().state;
     if (catState is! CatalogoLoaded) return;
 
-    final activos = catState.checklistItems
-        .where((i) => i.activo && i.tipoRegistro == _tipoRegistro)
-        .toList();
+    final activos = _itemsVisibles(catState.checklistItems);
 
     if (widget.adminMode) return; // En admin mode no hay botón de guardar; los cambios se sincronizan desde EditorAdminPage.
 
@@ -288,10 +354,13 @@ class _ChecklistPageState extends State<ChecklistPage>
             return const Center(child: CircularProgressIndicator());
           }
 
-          final activos = state.checklistItems
-              .where((i) => i.activo && i.tipoRegistro == _tipoRegistro)
-              .toList();
-          final grouped = _groupByCategoria(activos);
+          final activos = _itemsVisibles(state.checklistItems);
+          final grouped = _groupByCategoria(
+            activos,
+            categoriasVacias: _tipoRegistroNormalizado(_tipoRegistro) == 'tractor'
+                ? ['Inspeccionar Tractor', _categoriaImplemento]
+                : const [],
+          );
           if (grouped.isEmpty) {
             return const Center(
               child: Column(
@@ -326,21 +395,24 @@ class _ChecklistPageState extends State<ChecklistPage>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     children: [
-                      ...grouped[currentCategoria]!
-                          .map((item) => _ChecklistItemCard(
-                                item: item,
-                                resultado: _resultados[item.id],
-                                observacion: _observaciones[item.id],
-                                onResultado: (r) => _setResultado(item.id, r),
-                                onObservacion: (o) {
-                                  _observaciones[item.id] = o;
-                                  _obsDebounce?.cancel();
-                                  _obsDebounce = Timer(
-                                    const Duration(milliseconds: 600),
-                                    _autoSave,
-                                  );
-                                },
-                              )),
+                      if (grouped[currentCategoria]!.isEmpty)
+                        _buildEmptyCategory(currentCategoria)
+                      else
+                        ...grouped[currentCategoria]!
+                            .map((item) => _ChecklistItemCard(
+                                  item: item,
+                                  resultado: _resultados[item.id],
+                                  observacion: _observaciones[item.id],
+                                  onResultado: (r) => _setResultado(item.id, r),
+                                  onObservacion: (o) {
+                                    _observaciones[item.id] = o;
+                                    _obsDebounce?.cancel();
+                                    _obsDebounce = Timer(
+                                      const Duration(milliseconds: 600),
+                                      _autoSave,
+                                    );
+                                  },
+                                )),
                       const SizedBox(height: 80),
                     ],
                   ),
@@ -473,12 +545,46 @@ class _ChecklistPageState extends State<ChecklistPage>
   }
 
   Map<String, List<ChecklistItem>> _groupByCategoria(
-      List<ChecklistItem> items) {
+      List<ChecklistItem> items, {List<String> categoriasVacias = const []}) {
     final grouped = <String, List<ChecklistItem>>{};
+    for (final categoria in categoriasVacias) {
+      grouped[_categoriaCanonica(categoria)] = [];
+    }
     for (final item in items) {
-      grouped.putIfAbsent(item.categoriaNombre, () => []).add(item);
+      grouped.putIfAbsent(_categoriaCanonica(item.categoriaNombre), () => [])
+          .add(item);
     }
     return grouped;
+  }
+
+  Widget _buildEmptyCategory(String categoria) {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.shade200),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.fact_check_outlined,
+              size: 42, color: Colors.orange.shade700),
+          const SizedBox(height: 12),
+          Text(
+            categoria,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'No hay ítems configurados para esta inspección.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+          ),
+        ],
+      ),
+    );
   }
 }
 

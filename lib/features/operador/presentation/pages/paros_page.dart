@@ -141,7 +141,7 @@ class _ParosPageState extends State<ParosPage> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = const Color(0xFF1B5E20);
+    const primaryColor = Color(0xFF1B5E20);
 
     final scaffold = Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -214,7 +214,7 @@ class _ParosPageState extends State<ParosPage> {
 
   /// Lista de paros registrados
   Widget _buildParosList() {
-    final primaryColor = const Color(0xFF1B5E20);
+    const primaryColor = Color(0xFF1B5E20);
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -229,7 +229,7 @@ class _ParosPageState extends State<ParosPage> {
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: primaryColor.withValues(alpha: 0.1),
-              child: Icon(Icons.pause_circle, color: primaryColor),
+              child: const Icon(Icons.pause_circle, color: primaryColor),
             ),
             title: Text(
               paro.tipoParoNombre,
@@ -296,7 +296,7 @@ class _ParosPageState extends State<ParosPage> {
   /// Barra inferior con botones de acción
   Widget _buildBottomBar(Color primaryColor) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
       ),
@@ -810,7 +810,7 @@ class _AgregarParoSheetState extends State<_AgregarParoSheet> {
 
               // Campo: Tipo de paro (dropdown)
               DropdownButtonFormField<TipoParo>(
-                value: _tipoParo,
+                initialValue: _tipoParo,
                 validator: (value) => value == null ? 'Campo requerido' : null,
                 decoration: InputDecoration(
                   labelText: 'Tipo de paro *',
