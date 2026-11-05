@@ -666,6 +666,13 @@ class _HomePorteroPageState extends State<HomePorteroPage> {
                 );
               },
             ),
+            // Lo que DEBE SALIR este turno. El registro de lecturas de
+            // abajo solo escribe; sin esta lista no hay con que comparar.
+            IconButton(
+              icon: const Icon(Icons.assignment_turned_in_outlined),
+              tooltip: 'Programa de entrega del turno',
+              onPressed: () => context.push('/portero/programa'),
+            ),
             IconButton(
               icon: const Icon(Icons.account_circle_outlined),
               tooltip: 'Mi perfil / Cerrar sesión',

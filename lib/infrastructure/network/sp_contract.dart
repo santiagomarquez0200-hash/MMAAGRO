@@ -84,11 +84,12 @@ class SpRegistry {
   static const _aprobarRegistro         = 'dbo.CLI547_AGMSP_MMA_APROBAR_REGISTRO';
   static const _actualizarStatusJornada = 'dbo.CLI547_AGMSP_MMA_ACTUALIZAR_STATUS_JORNADA';
   static const _registrarLecturaPortero = 'dbo.CLI547_AGMSP_MMA_REGISTRAR_LECTURA_PORTERO';
+  static const _garitaTurno             = 'dbo.CLI547_AGMSP_MMA_GARITA_TURNO';
+  static const _operadorMiDia           = 'dbo.CLI547_AGMSP_MMA_OPERADOR_MI_DIA';
   static const _getRegistrosSupervisor  = 'dbo.CLI547_AGMSP_MMA_GET_REGISTROS_SUPERVISOR';
   static const _getJornadasSupervisor   = 'dbo.CLI547_AGMSP_MMA_GET_JORNADAS_SUPERVISOR';
   static const _getParosMecanico        = 'dbo.CLI547_AGMSP_MMA_GET_PAROS_MECANICO';
   static const _completarFallaMecanica  = 'dbo.CLI547_AGMSP_MMA_COMPLETAR_FALLA_MECANICA';
-  static const _registrarPuntosGps      = 'dbo.CLI547_AGMSP_MMA_REGISTRAR_PUNTOS_GPS';
   static const _obtenerNavegacion       = 'dbo.CLI547_AGMSP_Obtener_Navegacion';
 
   /// Expone el nombre del SP de navegación para uso externo (auth repository).
@@ -223,6 +224,28 @@ class SpRegistry {
     ),
     // _crearRegistroVehiculo — no está en lista activa.
     // El vehículo va por SINCRONIZAR_OFFLINE con tipo_registro='vehiculo'.
+    // ─── Programa de entrega (MMA entrega de maquinaria) ────────────────────
+    // Ambos son de SOLO LECTURA: el APK los llama cuantas veces haga falta.
+    _garitaTurno: SpContract(
+      spName: _garitaTurno,
+      inputParams: [
+        SpParamDef('@p_id_zona', SpParamType.string),
+        // Sin fecha el SP asume hoy; sin turno trae los dos del dia.
+        SpParamDef('@p_fecha', SpParamType.dateString, nullable: true),
+        SpParamDef('@p_turno', SpParamType.string, nullable: true),
+      ],
+    ),
+    _operadorMiDia: SpContract(
+      spName: _operadorMiDia,
+      inputParams: [
+        // Se acepta cualquiera de los dos identificadores y el SP resuelve:
+        // la programacion guarda el de Trabajadores, que es el camino directo.
+        SpParamDef('@p_id_trabajador', SpParamType.integer, nullable: true),
+        SpParamDef('@p_id_usuario', SpParamType.integer, nullable: true),
+        SpParamDef('@p_fecha', SpParamType.dateString, nullable: true),
+      ],
+    ),
+
     _getRegistrosSupervisor: SpContract(
       spName: _getRegistrosSupervisor,
       inputParams: [
@@ -264,24 +287,6 @@ class SpRegistry {
       outputParams: [
         SpParamDef('@p_success', SpParamType.bit),
         SpParamDef('@p_mensaje', SpParamType.string),
-      ],
-    ),
-
-    // ─── GPS trazabilidad de maquinaria ──────────────────────────────────────
-    // SP de escritura: recibe un JSON array de puntos GPS desde el APK y los
-    // persiste mediante MERGE (idempotente). Se llama en segundo plano al
-    // restaurar cobertura, sin depender del flujo de SINCRONIZAR_OFFLINE.
-    _registrarPuntosGps: SpContract(
-      spName: _registrarPuntosGps,
-      guidFormat: 'no_braces_with_hyphens',
-      inputParams: [
-        SpParamDef('@p_registro_id',  SpParamType.uuid,       nullable: false),
-        SpParamDef('@p_puntos_json',  SpParamType.jsonString,  nullable: false),
-      ],
-      outputParams: [
-        SpParamDef('@p_success',          SpParamType.bit),
-        SpParamDef('@p_mensaje',          SpParamType.string),
-        SpParamDef('@p_total_insertados', SpParamType.integer),
       ],
     ),
 

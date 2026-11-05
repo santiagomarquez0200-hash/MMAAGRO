@@ -79,6 +79,9 @@ dependencies:
 
   # GPS / Localización
   geolocator: ^13.0.1
+  # Solo para requestService(): el diálogo nativo que enciende la ubicación sin
+  # salir de la app (geolocator no lo expone). No se usa para rastrear.
+  location: ^5.0.3
 
 dev_dependencies:
   flutter_test:

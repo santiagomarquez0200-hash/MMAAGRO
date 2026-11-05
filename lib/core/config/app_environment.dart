@@ -68,6 +68,14 @@ class AppEnvironment {
   static const String spRegistrarLecturaPortero =
       'dbo.CLI547_AGMSP_MMA_REGISTRAR_LECTURA_PORTERO';
 
+  /// Programa de entrega del turno: lo que DEBE SALIR por garita.
+  /// Es la contraparte de REGISTRAR_LECTURA_PORTERO, que solo escribe.
+  static const String spGaritaTurno = 'dbo.CLI547_AGMSP_MMA_GARITA_TURNO';
+
+  /// El dia del tractorista: que maquina, que labor, donde y a que hora.
+  static const String spOperadorMiDia =
+      'dbo.CLI547_AGMSP_MMA_OPERADOR_MI_DIA';
+
   // ─── SPs activos — supervisor ────────────────────────────────────────────
 
   static const String spGetRegistrosSupervisor =
@@ -75,13 +83,6 @@ class AppEnvironment {
 
   static const String spGetJornadasSupervisor =
       'dbo.CLI547_AGMSP_MMA_GET_JORNADAS_SUPERVISOR';
-
-  // ─── SPs activos — GPS trazabilidad de maquinaria ────────────────────────
-
-  /// Recibe puntos GPS del APK y los persiste en SQL Server.
-  /// Se llama en segundo plano al restaurar cobertura de red.
-  static const String spRegistrarPuntosGps =
-      'dbo.CLI547_AGMSP_MMA_REGISTRAR_PUNTOS_GPS';
 
   // ─── SPs activos — mecánico ──────────────────────────────────────────────
 

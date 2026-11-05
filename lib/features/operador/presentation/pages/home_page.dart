@@ -1255,6 +1255,22 @@ class _HomePageState extends State<HomePage>
                     ),
                     const SyncIndicator(),
                     const SizedBox(width: 8),
+                    // Su dia: que maquina le toca, que labor, donde y a que
+                    // hora se la entregan. Antes esa informacion existia
+                    // repartida en tres lados y en ninguno junta.
+                    GestureDetector(
+                      onTap: () => context.push('/operador/mi-dia'),
+                      child: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF8CC53F).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.today_rounded,
+                            color: Color(0xFF8CC53F), size: 20),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () => _mostrarBackupDialog(context),
                       child: Container(

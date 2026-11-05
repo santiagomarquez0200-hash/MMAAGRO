@@ -1,0 +1,302 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para Sandy - Una Verdad Inevitable</title>
+    <!-- Tailwind CSS for modern responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Playfair Display -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Three.js for 3D interactive animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .serif-title {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Canvas background styling */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+        /* Glassmorphism card */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.78);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(236, 72, 153, 0.25);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.08); }
+        }
+        .animate-pulse-glow {
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+        /* Custom scroll */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(236, 72, 153, 0.4);
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 min-h-screen text-slate-100 flex items-center justify-center p-4 sm:p-6 md:p-8 relative">
+
+    <!-- 3D Three.js Interactive Background Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Introductory 3D Interactive Experience Screen -->
+    <div id="introScreen" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-center transition-all duration-1000">
+        <div class="relative mb-6">
+            <!-- Glow background -->
+            <div class="absolute inset-0 bg-pink-500/30 rounded-full blur-3xl animate-pulse-glow"></div>
+            <!-- Interactive Emoji & Icon container representing the 3D world -->
+            <div class="relative text-7xl sm:text-8xl select-none filter drop-shadow-[0_20px_30px_rgba(236,72,153,0.6)] animate-pulse">
+                🌹✨💐
+            </div>
+        </div>
+        <span class="text-xs uppercase tracking-widest text-pink-400 font-semibold mb-2">Simulación 3D Interactiva</span>
+        <h2 class="serif-title text-2xl sm:text-3xl md:text-4xl font-bold text-white max-w-lg mb-3">Sandy, antes de que cierres esta pestaña y finjas que no te importa...</h2>
+        <p class="text-sm sm:text-base text-slate-300 max-w-md mb-8">Hay algo que necesitas leer con los ojos y el corazón bien abiertos. Muévete por el espacio y haz clic abajo.</p>
+        <button onclick="openLetter()" class="px-8 py-4 bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-medium rounded-2xl shadow-2xl shadow-pink-600/50 transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer text-sm sm:text-base border border-pink-400/30">
+            Abrir y enfrentar la verdad 💌
+        </button>
+    </div>
+
+    <!-- Main Letter Container (Hidden initially) -->
+    <main id="mainContainer" class="w-full max-w-2xl glass-card shadow-2xl shadow-pink-950/60 rounded-3xl overflow-hidden flex flex-col relative opacity-0 transition-opacity duration-1000 hidden z-10 my-auto">
+        
+        <!-- Header -->
+        <header class="p-6 sm:p-8 border-b border-white/10 text-center relative bg-gradient-to-b from-pink-950/30 to-transparent">
+            <span class="text-xs uppercase tracking-widest text-pink-400 font-semibold mb-2 block tracking-widest">Para Sandy</span>
+            <h1 class="serif-title text-2xl sm:text-4xl font-bold text-white tracking-wide">Lo que mi silencio esconde de ti</h1>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">Lee esto con calma, sin defensas de por medio.</p>
+        </header>
+
+        <!-- Letter Body Content with High-Impact Reverse Psychology -->
+        <div class="p-6 sm:p-10 space-y-6 custom-scroll overflow-y-auto max-h-[58vh] text-slate-300 leading-relaxed text-sm sm:text-base">
+            
+            <p class="first-letter:text-4xl first-letter:font-bold first-letter:text-pink-400 first-letter:mr-3 first-letter:float-left">
+                Sandy, lo más probable es que pienses que esto será el típico discurso empalagoso o el ruego constante de siempre. Si prefieres protegerte, puedes cerrar esta pestaña ahora mismo y seguir fingiendo que lo nuestro es solo físico. De verdad, hazlo si eso te da paz.
+            </p>
+
+            <p>
+                Pero si te atreves a leer hasta el final, vas a tener que soportar una verdad incómoda: <strong>verte tanto tiempo terminó jodiendo mi cabeza por completo</strong>. Ya pasó el momento en el que solo pensaba en sexo contigo, aunque la química salvaje entre ambos sea innegable y nos encante.
+            </p>
+
+            <p class="bg-pink-950/30 border-l-4 border-pink-500 p-4 rounded-r-xl italic text-slate-200">
+                "Tú sabes muy bien que yo nunca he sido cariñoso, jamás lo he sido con nadie. Me cuesta un mundo mostrar vulnerabilidad, y por eso a veces me encierro, me pongo frío y tardo horas en responderte... tal como cuando me quedo callado."
+            </p>
+
+            <p>
+                Me dijiste muy segura que tú solo querías tener orgasmos conmigo y ya, como si con eso pusieras un escudo protector. Qué cómoda es esa frase para no arriesgar nada. Pero lo irónico es que mientras tú te refugias en eso, <strong>yo me estoy tragando los sentimientos reales que me estás provocando</strong>. Y duele, carajo que duele, darme cuenta de que para mí ya dejaste de ser solo un rato.
+            </p>
+
+            <p>
+                Hoy te pensé todo el día de una forma extraña. Sentí esa punzada en el pecho de que me faltaba algo... y eras tú. Por eso a veces me alejo y me pongo distante; no es porque no me importes, es todo lo contrario: <strong>me importas tanto que me da pánico</strong>. Me asusta jugármela por alguien que prefiere la superficialidad por miedo a salir lastimada.
+            </p>
+
+            <p class="font-medium text-white bg-slate-900/60 p-4 rounded-2xl border border-white/5">
+                Así que piénsalo bien. Puedes seguir eligiendo la comodidad de lo pasajero, o puedes dejar tus murallas abajo y ver si realmente nos atrevemos a ir en serio. La pelota está en tu cancha, Sandy. Yo ya puse mis cartas sobre la mesa.
+            </p>
+
+            <div class="bg-gradient-to-r from-pink-950/40 to-purple-950/40 p-5 rounded-2xl border border-pink-500/30 text-center space-y-3 mt-6">
+                <h3 class="serif-title text-lg font-bold text-white">Una última cosa...</h3>
+                <p class="text-sm text-slate-300">
+                    Hoy quiero verte, quiero salir contigo. Si ya se te pasó el enojo o quieres que hablemos como se debe, dímelo o confírmame por WhatsApp.
+                </p>
+<a href="https://wa.me/51983286937?text=Hola,%20ya%20le%C3%AD%20tu%20carta.%20Hablemos..."
+   target="_blank"
+   class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-600/30 cursor-pointer">                    💬 Confirmar por WhatsApp
+                </a>
+            </div>
+        </div>
+
+        <!-- Interactive Footer / Action Area -->
+        <footer class="p-6 sm:p-8 bg-black/40 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-xs text-slate-400 text-center sm:text-left">
+                <p>Una confesión real, sin máscaras.</p>
+            </div>
+            <button onclick="sendReaction()" id="reactBtn" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-medium rounded-xl shadow-lg shadow-pink-600/40 transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer text-sm">
+                ✨ Hacerle saber que leíste esto
+            </button>
+        </footer>
+
+    </main>
+
+    <!-- Three.js 3D Animation Engine & Interactions -->
+    <script>
+        const canvas = document.getElementById('bgCanvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        camera.position.z = 30;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xff4081, 2, 50);
+        pointLight.position.set(0, 10, 15);
+        scene.add(pointLight);
+
+        // Create Floating 3D Hearts and Glowing Spheres (representing flowers/petals)
+        const particlesCount = 80;
+        const particleGroup = new THREE.Group();
+
+        // Heart shape geometry for 3D hearts
+        const heartShape = new THREE.Shape();
+        heartShape.moveTo(25, 25);
+        heartShape.bezierCurveTo(25, 25, 20, 0, 0, 0);
+        heartShape.bezierCurveTo(-30, 0, -30, 35, -30, 35);
+        heartShape.bezierCurveTo(-30, 55, -10, 77, 25, 95);
+        heartShape.bezierCurveTo(60, 77, 80, 55, 80, 35);
+        heartShape.bezierCurveTo(80, 35, 80, 0, 50, 0);
+        heartShape.bezierCurveTo(35, 0, 25, 25, 25, 25);
+
+        const extrudeSettings = { depth: 8, bevelEnabled: true, bevelSegments: 3, steps: 2, bevelSize: 3, bevelThickness: 3 };
+        const heartGeometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
+        heartGeometry.center();
+        heartGeometry.scale(0.08, 0.08, 0.08);
+
+        const sphereGeometry = new THREE.SphereGeometry(0.6, 16, 16);
+
+        const materials = [
+            new THREE.MeshStandardMaterial({ color: 0xff3366, roughness: 0.3, metalness: 0.8 }),
+            new THREE.MeshStandardMaterial({ color: 0xff66b2, roughness: 0.2, metalness: 0.9 }),
+            new THREE.MeshStandardMaterial({ color: 0x9c27b0, roughness: 0.4, metalness: 0.7 }),
+            new THREE.MeshStandardMaterial({ color: 0xff80ab, roughness: 0.3, metalness: 0.5 })
+        ];
+
+        const particleData = [];
+
+        for (let i = 0; i < particlesCount; i++) {
+            const isHeart = i % 2 === 0;
+            const geo = isHeart ? heartGeometry : sphereGeometry;
+            const mat = materials[Math.floor(Math.random() * materials.length)];
+            const mesh = new THREE.Mesh(geo, mat);
+
+            mesh.position.x = (Math.random() - 0.5) * 50;
+            mesh.position.y = (Math.random() - 0.5) * 50;
+            mesh.position.z = (Math.random() - 0.5) * 30;
+
+            mesh.rotation.x = Math.random() * Math.PI;
+            mesh.rotation.y = Math.random() * Math.PI;
+
+            particleGroup.add(mesh);
+            particleData.push({
+                mesh: mesh,
+                speedX: (Math.random() - 0.5) * 0.04,
+                speedY: Math.random() * 0.05 + 0.02,
+                rotSpeed: (Math.random() - 0.5) * 0.02
+            });
+        }
+
+        scene.add(particleGroup);
+
+        // Mouse movement parallax effect
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - window.innerWidth / 2) / 200;
+            mouseY = (event.clientY - window.innerHeight / 2) / 200;
+        });
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+            particleGroup.rotation.y = targetX;
+            particleGroup.rotation.x = -targetY;
+
+            particleData.forEach(item => {
+                item.mesh.position.y += item.speedY;
+                item.mesh.position.x += item.speedX;
+                item.mesh.rotation.z += item.rotSpeed;
+
+                // Reset position when floating out of bounds
+                if (item.mesh.position.y > 25) {
+                    item.mesh.position.y = -25;
+                    item.mesh.position.x = (Math.random() - 0.5) * 50;
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- Interaction Functions ---
+        function openLetter() {
+            const intro = document.getElementById('introScreen');
+            const main = document.getElementById('mainContainer');
+            
+            intro.style.opacity = '0';
+            setTimeout(() => {
+                intro.style.display = 'none';
+                main.classList.remove('hidden');
+                main.classList.add('animate-fade-in');
+            }, 700);
+        }
+
+        function sendReaction() {
+            const btn = document.getElementById('reactBtn');
+            btn.innerHTML = "💌 ¡Mensaje enviado con éxito! ✨";
+            btn.classList.remove('from-pink-600', 'to-rose-600');
+            btn.classList.add('from-purple-600', 'to-pink-600');
+            
+            let feedback = document.createElement('div');
+            feedback.className = 'fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in';
+            feedback.innerHTML = `
+                <div class="glass-card border border-pink-500/40 p-6 sm:p-8 rounded-3xl max-w-sm text-center space-y-4 shadow-2xl">
+                    <div class="text-5xl animate-bounce">🌹</div>
+                    <h3 class="serif-title text-xl sm:text-2xl font-bold text-white">Carta leída y asumida</h3>
+                    <p class="text-sm text-slate-300">Ahora ella sabe exactamente lo que hay detrás de tu silencio y tus dudas. La decisión está tomada.</p>
+                    <button onclick="this.parentElement.parentElement.remove()" class="w-full py-3 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white rounded-xl text-sm font-medium transition-all shadow-lg shadow-pink-600/40 cursor-pointer">
+                        Entendido
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(feedback);
+        }
+    </script>
+</body>
+</html>
+```

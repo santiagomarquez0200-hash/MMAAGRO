@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../database/app_database.dart';
+import 'gps_service_prompt.dart';
 
 // ─── Constantes de configuración ─────────────────────────────────────────────
 
@@ -40,6 +41,21 @@ const _kMaxAccuracyMetros = 5.0;
 /// Velocidad máxima en m/s que puede alcanzar la maquinaria (36 km/h).
 /// Puntos que impliquen velocidades superiores son errores GPS y se descartan.
 const _kMaxVelocidadMs = 10.0;
+
+/// Cada cuánto el watchdog revisa que el rastreo siga vivo.
+const _kWatchdogInterval = Duration(minutes: 1);
+
+/// Si el stream no entrega NINGUNA lectura durante este tiempo teniendo el
+/// servicio de ubicación activo, se asume que murió en silencio y se recrea.
+///
+/// Se mide sobre las lecturas crudas, ANTES de los filtros de accuracy: con
+/// mala señal el stream sigue vivo aunque todos los puntos se descarten, y
+/// reiniciarlo ahí solo empeoraría las cosas (vuelve a perder el warm-up).
+const _kMaxMinutosSinLectura = 2;
+
+/// Espera tras reactivarse el servicio antes de recrear el stream. El receptor
+/// GPS necesita un momento para volver a fijar posición.
+const _kEsperaTrasReactivar = Duration(seconds: 3);
 
 // ─── Modelo interno de sublote con geometría ──────────────────────────────────
 
@@ -92,6 +108,20 @@ class GpsTrackingService {
   Timer? _recordTimer;
   String? _activeRegistroId;
   int _sequence = 0;
+
+  // Watchdog: vigila que el rastreo siga vivo durante toda la jornada.
+  StreamSubscription<ServiceStatus>? _serviceSub;
+  Timer? _watchdogTimer;
+
+  /// Momento de la última lectura recibida del stream, con filtros o sin ellos.
+  /// Es la señal de "el stream está vivo".
+  DateTime? _ultimaLecturaAt;
+
+  /// Evita repetir el log de servicio caído en cada ciclo del watchdog.
+  bool _servicioCaido = false;
+
+  /// Impide que dos recuperaciones se pisen entre sí.
+  bool _recuperando = false;
 
   // Buffer de candidatos para la ventana actual
   final List<Position> _windowBuffer = [];
@@ -156,6 +186,21 @@ class GpsTrackingService {
         }
       });
 
+      // Watchdog 1: el operador apaga o enciende la ubicación del teléfono.
+      _ultimaLecturaAt = DateTime.now();
+      _servicioCaido = false;
+      _serviceSub = Geolocator.getServiceStatusStream().listen(
+        _onServiceStatus,
+        onError: (dynamic e) => developer.log(
+          'GPS: error en el stream de estado del servicio: $e',
+          name: 'GpsTrackingService',
+        ),
+        cancelOnError: false,
+      );
+
+      // Watchdog 2: el stream muere en silencio (batería, permiso revocado).
+      _watchdogTimer = Timer.periodic(_kWatchdogInterval, (_) => _verificarSalud());
+
       developer.log(
         'GPS: rastreo iniciado para $registroId (seq inicial: $initialSequence)',
         name: 'GpsTrackingService',
@@ -170,13 +215,18 @@ class GpsTrackingService {
     try {
       _recordTimer?.cancel();
       _recordTimer = null;
+      _watchdogTimer?.cancel();
+      _watchdogTimer = null;
       await _positionSub?.cancel();
       _positionSub = null;
+      await _serviceSub?.cancel();
+      _serviceSub = null;
       _activeRegistroId = null;
       _sequence = 0;
       _windowBuffer.clear();
       _lastRecordedPos = null;
       _lastRecordedTime = null;
+      _ultimaLecturaAt = null;
       _sublotes = [];
 
       final prefs = await SharedPreferences.getInstance();
@@ -223,6 +273,10 @@ class GpsTrackingService {
   /// si pasa los filtros de warm-up y accuracy.
   void _updateBuffer(Position pos) {
     if (_activeRegistroId == null) return;
+
+    // Se marca ANTES de los filtros: lo que prueba que el stream sigue vivo es
+    // que llegan lecturas, no que pasen los filtros de calidad.
+    _ultimaLecturaAt = DateTime.now();
 
     // 1. Warm-up: ignorar las primeras N lecturas
     if (_warmupCount < _kWarmupPuntos) {
@@ -345,6 +399,110 @@ class GpsTrackingService {
         name: 'GpsTrackingService',
         error: e,
       );
+    }
+  }
+
+  // ─── Watchdog ──────────────────────────────────────────────────────────────
+
+  /// El operador apagó o encendió la ubicación del teléfono a media jornada.
+  ///
+  /// Al reactivarse NO se confía en que el stream anterior reviva: cuando el
+  /// servicio se apaga, la capa nativa lanza LocationServiceDisabledException y
+  /// normalmente desmonta el listener para siempre. Se recrea todo desde cero
+  /// con [resumeIfActive], que además recupera MAX(secuencia) de SQLite para no
+  /// pisar los puntos ya grabados.
+  Future<void> _onServiceStatus(ServiceStatus status) async {
+    final registroId = _activeRegistroId;
+    if (registroId == null) return;
+
+    if (status == ServiceStatus.disabled) {
+      _servicioCaido = true;
+      developer.log(
+        'GPS: el operador APAGÓ la ubicación — rastreo interrumpido. '
+        'Los puntos de este período no se pueden recuperar.',
+        name: 'GpsTrackingService',
+      );
+      return;
+    }
+
+    developer.log(
+      'GPS: ubicación reactivada — recreando el stream en '
+      '${_kEsperaTrasReactivar.inSeconds} s',
+      name: 'GpsTrackingService',
+    );
+    _servicioCaido = false;
+
+    // Fuera del callback y con margen para que el receptor fije posición.
+    await Future<void>.delayed(_kEsperaTrasReactivar);
+    if (_activeRegistroId == registroId) await _recuperar(registroId);
+  }
+
+  /// Revisa cada [_kWatchdogInterval] que el stream siga entregando lecturas.
+  ///
+  /// Cubre las muertes silenciosas que no emiten ningún evento de servicio:
+  /// optimización de batería que congela la app, permiso revocado desde los
+  /// ajustes, o el propio stream que deja de emitir sin lanzar error.
+  Future<void> _verificarSalud() async {
+    final registroId = _activeRegistroId;
+    if (registroId == null || _recuperando) return;
+
+    final ultima = _ultimaLecturaAt;
+    if (ultima == null) return;
+
+    final minutosSinLectura = DateTime.now().difference(ultima).inMinutes;
+    if (minutosSinLectura < _kMaxMinutosSinLectura) return;
+
+    try {
+      // Si el servicio está apagado no hay nada que reiniciar: el listener de
+      // estado se encargará cuando el operador lo vuelva a encender.
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        if (!_servicioCaido) {
+          _servicioCaido = true;
+          developer.log(
+            'GPS: sin lecturas hace $minutosSinLectura min — la ubicación del '
+            'teléfono está apagada.',
+            name: 'GpsTrackingService',
+          );
+        }
+        return;
+      }
+
+      final permiso = await Geolocator.checkPermission();
+      if (permiso == LocationPermission.denied ||
+          permiso == LocationPermission.deniedForever) {
+        developer.log(
+          'GPS: sin lecturas hace $minutosSinLectura min — el permiso de '
+          'ubicación fue revocado ($permiso). Reiniciar no ayuda.',
+          name: 'GpsTrackingService',
+        );
+        return;
+      }
+
+      // Servicio activo y permiso concedido, pero no llegan lecturas: el stream
+      // murió en silencio.
+      developer.log(
+        'GPS: $minutosSinLectura min sin lecturas con el servicio activo — '
+        'reiniciando el stream',
+        name: 'GpsTrackingService',
+      );
+      await _recuperar(registroId);
+    } catch (e) {
+      developer.log('GPS: error en el watchdog — $e',
+          name: 'GpsTrackingService', error: e);
+    }
+  }
+
+  /// Recrea el rastreo conservando la secuencia ya grabada.
+  Future<void> _recuperar(String registroId) async {
+    if (_recuperando) return;
+    _recuperando = true;
+    try {
+      await resumeIfActive(registroId);
+    } catch (e) {
+      developer.log('GPS: falló la recuperación — $e',
+          name: 'GpsTrackingService', error: e);
+    } finally {
+      _recuperando = false;
     }
   }
 
@@ -479,7 +637,12 @@ class GpsTrackingService {
   }
 
   Future<bool> _checkPermissions() async {
-    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    var serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Diálogo del sistema para encenderla sin salir de la app. Si el operador
+      // lo rechaza, la jornada se registra igual pero sin ruta.
+      serviceEnabled = await GpsServicePrompt.solicitarActivacion();
+    }
     if (!serviceEnabled) return false;
 
     LocationPermission permission = await Geolocator.checkPermission();

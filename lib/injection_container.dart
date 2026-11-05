@@ -40,6 +40,14 @@ import 'package:agro_aplicaciones/features/mecanico/domain/repositories/mecanico
 import 'package:agro_aplicaciones/features/mecanico/domain/usecases/get_paros_mecanico_usecase.dart';
 import 'package:agro_aplicaciones/features/mecanico/domain/usecases/completar_falla_usecase.dart';
 import 'package:agro_aplicaciones/features/mecanico/presentation/blocs/mecanico_bloc.dart';
+import 'package:agro_aplicaciones/features/portero/data/portero_programa_repository_impl.dart';
+import 'package:agro_aplicaciones/features/portero/domain/repositories/portero_programa_repository.dart';
+import 'package:agro_aplicaciones/features/portero/domain/usecases/get_programa_turno_usecase.dart';
+import 'package:agro_aplicaciones/features/portero/presentation/blocs/programa_bloc.dart';
+import 'package:agro_aplicaciones/features/operador/data/mi_dia_repository_impl.dart';
+import 'package:agro_aplicaciones/features/operador/domain/repositories/mi_dia_repository.dart';
+import 'package:agro_aplicaciones/features/operador/domain/usecases/get_mi_dia_usecase.dart';
+import 'package:agro_aplicaciones/features/operador/presentation/blocs/mi_dia_bloc.dart';
 import 'package:agro_aplicaciones/infrastructure/services/connectivity_service.dart';
 import 'package:agro_aplicaciones/infrastructure/services/gps_tracking_service.dart';
 
@@ -100,6 +108,14 @@ Future<void> initDependencies() async {
     MecanicoRepositoryImpl(erp: sl(), db: sl()),
   );
 
+  sl.registerSingleton<PorteroProgramaRepository>(
+    PorteroProgramaRepositoryImpl(erp: sl(), db: sl()),
+  );
+
+  sl.registerSingleton<MiDiaRepository>(
+    MiDiaRepositoryImpl(erp: sl(), db: sl()),
+  );
+
   // ─── Use Cases ────────────────────────────────────────────────────────────
   sl.registerFactory(() => LoginUseCase(sl()));
   sl.registerFactory(() => ObtenerProcesosUseCase(sl()));
@@ -126,6 +142,8 @@ Future<void> initDependencies() async {
   sl.registerFactory(() => GetRegistrosSupervisorUseCase(sl()));
   sl.registerFactory(() => GetParosMecanicoUseCase(sl()));
   sl.registerFactory(() => CompletarFallaUseCase(sl()));
+  sl.registerFactory(() => GetProgramaTurnoUseCase(sl()));
+  sl.registerFactory(() => GetMiDiaUseCase(sl()));
 
   // ─── Services ─────────────────────────────────────────────────────────────
   sl.registerLazySingleton<FirestoreService>(() => FirestoreService());
@@ -207,6 +225,16 @@ Future<void> initDependencies() async {
     () => MecanicoBloc(
       getParos: sl(),
       completarFalla: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => ProgramaBloc(
+      getPrograma: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => MiDiaBloc(
+      getMiDia: sl(),
     ),
   );
 }

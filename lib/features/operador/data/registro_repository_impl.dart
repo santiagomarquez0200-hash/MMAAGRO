@@ -16,6 +16,7 @@ import 'package:agro_aplicaciones/features/operador/domain/repositories/registro
 import 'package:agro_aplicaciones/infrastructure/database/app_database.dart';
 import 'package:agro_aplicaciones/infrastructure/network/erp_api_client.dart';
 import 'package:agro_aplicaciones/infrastructure/services/backup_service.dart';
+import 'package:agro_aplicaciones/infrastructure/services/gps_event_builder_service.dart';
 
 class RegistroRepositoryImpl implements RegistroRepository {
   final AppDatabase _db;
@@ -476,9 +477,10 @@ class RegistroRepositoryImpl implements RegistroRepository {
     // SQL Server GEOGRAPHY::STGeomFromText espera LONGITUD primero, luego LATITUD.
     // ≥ 2 puntos → LINESTRING; 1 punto → POINT; 0 puntos → null (campo omitido).
     final gpsRows = await _db.customSelect(
-      'SELECT longitud, latitud, velocidad_kmh, tipo_movimiento, sublote_id, '
-      '       captured_at '
+      'SELECT p.longitud, p.latitud, p.velocidad_kmh, p.tipo_movimiento, '
+      '       p.sublote_id, p.captured_at, l.lote_nombre '
       'FROM "CLI547_AGM_Ruta_maquinaria" p '
+      'LEFT JOIN lotes_local l ON l.id_erp = p.sublote_id '
       'WHERE p.registro_id = ? ORDER BY p.secuencia',
       variables: [Variable.withString(rid)],
     ).get();
@@ -516,11 +518,18 @@ class RegistroRepositoryImpl implements RegistroRepository {
       final lon    = row.read<double>('longitud');
       final at     = row.readNullable<int>('captured_at') ?? 0;
       final sublId = row.readNullable<int>('sublote_id');
-      // lotes_local no existe en la base local; el nombre del sublote queda vacío.
-      const sublNm = '';
+      final sublNm = row.readNullable<String>('lote_nombre') ?? '';
+
+      // Hueco de GPS (apagado, sin señal, app cerrada): el punto anterior y el
+      // actual quedan contiguos en la secuencia pero los separan minutos u
+      // horas. La recta entre ambos no es un recorrido real, así que no se
+      // acumula: de lo contrario aparecen kilómetros que nadie hizo.
+      final hayHueco = prevAt != null &&
+          at > 0 &&
+          (at - prevAt) > GpsEventBuilderService.kMaxGapSeg * 1000;
 
       // Distancia desde el punto anterior
-      if (prevLat != null && prevLon != null) {
+      if (prevLat != null && prevLon != null && !hayHueco) {
         final distM = Geolocator.distanceBetween(prevLat, prevLon, lat, lon);
         if (tipo == 'TRABAJO')   kmTrabajo  += distM / 1000.0;
         if (tipo == 'TRASLADO')  kmTraslado += distM / 1000.0;
@@ -569,6 +578,11 @@ class RegistroRepositoryImpl implements RegistroRepository {
               'minutos': (e.value['seg'] as int) ~/ 60,
             }).toList())
         : null;
+
+    // Eventos derivados: visitas a sublote, paradas y tramos. Si falla devuelve
+    // un mapa vacío y la jornada sincroniza igual con la ruta consolidada.
+    final eventos =
+        await GpsEventBuilderService(db: _db).construirEventos(rid);
 
     return {
       // ── Identificación ───────────────────────────────────────────────────
@@ -637,6 +651,8 @@ class RegistroRepositoryImpl implements RegistroRepository {
         'gps_eficiencia_pct':     double.parse(eficiencia.toStringAsFixed(2)),
         if (sublotesJson != null) 'gps_sublotes': jsonDecode(sublotesJson),
       },
+      // ── Eventos derivados (v5+) ──────────────────────────────────────────
+      ...eventos,
     };
   }
 
@@ -1513,6 +1529,8 @@ class RegistroRepositoryImpl implements RegistroRepository {
       'WHERE registro_id = ? ORDER BY secuencia',
       variables: [Variable.withString(registroId)],
     ).get();
+    final eventos =
+        await GpsEventBuilderService(db: _db).construirEventos(registroId);
     String? rutaWkt;
     if (gpsRows2.length >= 2) {
       final coords = gpsRows2
@@ -1572,6 +1590,8 @@ class RegistroRepositoryImpl implements RegistroRepository {
       if (marchasJson.isNotEmpty) 'marchas': marchasJson,
       if (reg.firmaOperador != null) 'firma_operador': reg.firmaOperador,
       if (rutaWkt != null) 'ruta_wkt': rutaWkt,
+      // ── Eventos derivados (v5+) ──────────────────────────────────────────
+      ...eventos,
     };
   }
 }

@@ -19,6 +19,10 @@ import 'package:agro_aplicaciones/features/operador/presentation/pages/editar_re
 import 'package:agro_aplicaciones/features/operador/domain/entities/registro_diario.dart';
 import 'package:agro_aplicaciones/features/operador/presentation/pages/visualizar_registro_page.dart';
 import 'package:agro_aplicaciones/features/portero/presentation/pages/home_portero_page.dart';
+import 'package:agro_aplicaciones/features/portero/presentation/pages/programa_entrega_page.dart';
+import 'package:agro_aplicaciones/features/portero/presentation/blocs/programa_bloc.dart';
+import 'package:agro_aplicaciones/features/operador/presentation/pages/mi_dia_page.dart';
+import 'package:agro_aplicaciones/features/operador/presentation/blocs/mi_dia_bloc.dart';
 import 'package:agro_aplicaciones/features/supervisor/presentation/pages/home_supervisor_page.dart';
 import 'package:agro_aplicaciones/features/supervisor/presentation/pages/editor_admin_page.dart';
 import 'package:agro_aplicaciones/features/mecanico/presentation/pages/mecanico_page.dart';
@@ -154,6 +158,20 @@ GoRouter createRouter(AuthBloc authBloc) {
       GoRoute(
         path: '/portero/home',
         builder: (context, state) => const HomePorteroPage(),
+      ),
+      GoRoute(
+        path: '/portero/programa',
+        builder: (context, state) => BlocProvider(
+          create: (_) => sl<ProgramaBloc>(),
+          child: const ProgramaEntregaPage(),
+        ),
+      ),
+      GoRoute(
+        path: '/operador/mi-dia',
+        builder: (context, state) => BlocProvider(
+          create: (_) => sl<MiDiaBloc>(),
+          child: const MiDiaPage(),
+        ),
       ),
       GoRoute(
         path: '/supervisor/home',
